@@ -8,26 +8,23 @@ import matplotlib.pyplot as plt #for plotting the data
 import time # to time the functions
 import pickle #To save logistic model, to avoid training each time. 
 
-
-
 print('hello world from floris')
 
-### Function to load the data
+### Function to load the data from ING
+### need to check if this works on a windows, otherwise we need to use if statements. Discuss!
 def loadINGData(sheet_name):
-    return pd.read_excel('data/DataING.xlsx', sheet_name=sheet_name)
+    return pd.read_excel('data/DataING.xlsx', sheet_name=sheet_name) #Error in this line? Ask Floris
 
-# A bit of data reformating 
-prepaymentData = loadINGData('Prepayment data')
-data = prepaymentData.to_numpy()
-#print(prepaymentData)
-
+### Load the created pivot table.
 prepaymentSummary = loadINGData('Prepayment summary')
 #print(prepaymentSummary)
 
+### A function for rescaling the data.
 def rescale(variable_name, scaling):
     temp = prepaymentSummary[variable_name].to_numpy()
     return np.round_(temp/scaling)
-    
+ 
+### Rescale the variables to reduce the amount of data points 
 prepayed = rescale('Sum of Prepayed', 10000)
 notPrepayed = rescale('Sum of not prepayed', 10000)
 incentive = prepaymentSummary["Incentive"].to_numpy()
@@ -36,6 +33,8 @@ incentive = prepaymentSummary["Incentive"].to_numpy()
 #print(notPrepayed)
 
 def trainPrepaymentModel(filename):
+    startTime = time.time()
+
     ### spliting the prepayment data dependent variable into binary instead of continous variable. ###
     X = []
     y = []
@@ -51,7 +50,6 @@ def trainPrepaymentModel(filename):
     print(len(X))
     print(len(y))
 
-    startTime = time.time()
     logr = linear_model.LogisticRegression()
     logr.fit(np.array(X).reshape(-1,1),np.array(y))
 
@@ -64,17 +62,33 @@ def trainPrepaymentModel(filename):
 #trainPrepaymentModel('prepayment_model.sav')
 
 
-# load the model from disk
+### Load the prepayment model from disk, so no need to retrain every time ###
 loaded_model = pickle.load(open('prepayment_model.sav', 'rb'))
-print(loaded_model.coef_)
+print(f"The coefficients of the model are {loaded_model.coef_}")
 
-def logit2prob(logr,x):
-  log_odds = logr.coef_ * x + logr.intercept_
+### This function calculates the probability of prepayment for a given model and incentive
+def probPrepayment(model,x):
+  log_odds = model.coef_ * x + model.intercept_
   odds = np.exp(log_odds)
   probability = odds / (1 + odds)
-  return(probability)
+  return(probability[0])
 
-print(logit2prob(loaded_model, incentive))
+def printPrepaymentOverview(values, showScaterPlot = False):
+    print('The prepayment level for echt level of incentive is')
+    probabilities = probPrepayment(loaded_model, values)
+    overview = []
+    for i in range(len(values)):
+        overview.append([values[i], probabilities[i]])
+    print(pd.DataFrame(data =overview))
+    if (showScaterPlot):
+        plt.scatter(values, probabilities)
+        plt.show()
+
+#printPrepaymentOverview(incentives)
+values = []
+for i in range(50):
+    values.append(-0.05 + i * 0.0025)
+printPrepaymentOverview(values)
 
 
 
@@ -98,6 +112,4 @@ logr = linear_model.LogisticRegression()
 logr.fit(incentive.reshape(-1,1),ppRate)
 """
 
-
-
-print('done')
+print('prepayment.py is finished')
