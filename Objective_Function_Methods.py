@@ -9,7 +9,7 @@ import pandas as pd
 from operator import add
 
 
-# This method returns a list of cash flows that would occur starting from the present if there would be no prepayments. It takes the origional mortgage portfolio as input.
+# This method returns a list of cash flows that would occur starting from the present if there would be no prepayments. It takes the original mortgage portfolio as input.
 def Compute_Cash_Flows(mortgageData):
     max_len = max(mortgageData.iloc[1])
     cash_flows = []
