@@ -7,13 +7,19 @@ from sklearn import linear_model # for logistic regression
 import matplotlib.pyplot as plt #for plotting the data
 import time # to time the functions
 import pickle #To save logistic model, to avoid training each time. 
+import platform #To check the system
 
 print('hello world from floris')
 
 ### Function to load the data from ING
 ### need to check if this works on a windows, otherwise we need to use if statements. Discuss!
+
 def loadINGData(sheet_name):
-    return pd.read_excel('data/DataING.xlsx', sheet_name=sheet_name) #Error in this line? Ask Floris
+    if (platform.system() == 'Darwin'):
+        return pd.read_excel('data/DataING.xlsx', sheet_name=sheet_name) #Error in this line? Ask Floris
+    else:
+        return pd.read_excel('data\DataING.xlsx', sheet_name=sheet_name) #Error in this line? Ask Floris
+
 
 ### Load the created pivot table.
 prepaymentSummary = loadINGData('Prepayment summary')
