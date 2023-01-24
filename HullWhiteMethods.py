@@ -38,3 +38,7 @@ def theta(kappa, sigma, t):
 def integral(T, kappa, tau, sigma):
     value = quad(integrand, 0, tau, args=(T, kappa, tau, sigma))[0]
     return value
+
+
+def func(x,a,b,c,d,e):
+    return a*(x-d)**3 + b*(x-d)**2 + c*(x-d) + e
