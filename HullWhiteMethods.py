@@ -35,7 +35,7 @@ def integrand(T, z, kappa, tau, sigma):
     
 #This function defines the time varying mean theta(t) for the Hull-White model    
 def theta(kappa, sigma, t):
-    value = kappa + sigma
+    value = 1/kappa*func_deriv(t,a,b,c,d) + func(t,a,b,c,d) + (sigma**2)/(2*kappa**2)*(1-exp(-2*kappa*t))
     return value
 
 
@@ -55,3 +55,9 @@ def curve_parameters(data):
     xdata = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
     popt, pcov = curve_fit(func, xdata, data)
     return popt
+    
+
+#This function gives the value of the derivative of the fitted forward curve. I added d as input, because than you can just enter
+# *popt as input, where popt is the output from curve_parameters()
+def func_deriv(x,a,b,c,d):
+    return 3*a*x**2+2*b*x+c
