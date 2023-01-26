@@ -1,6 +1,7 @@
 # general tools
 import numpy as np
 import math
+from HullWhiteMethods import theta
 
 import pandas as pd  # for reading excel data file
 
@@ -17,6 +18,8 @@ def simulationHullWhite(theta, alpha, sigma, r_zero, delta, T):
     rates = [r_zero]
     # Simulate T months with S steps per month
     for t in range(T):
+        # Here: determine theta for current period
+
         for s in range(0, S):
             # Euler discretization for simulating next step
             sim = rates[-1] + (theta - alpha * rates[-1]) * delta + sigma * np.random.normal(0, 1)
