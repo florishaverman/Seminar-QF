@@ -33,11 +33,11 @@ def Compute_Time_Values(mortgageData):
         for i in range(max_len):
             addition = 0
             if mortgageData.iloc[1,j] >= max_len-i:
-                addition += mortgageData.iloc[2,j]/12*mortgageData.iloc[0,j]/(1+mortgageData.iloc[2,j])
+                addition += mortgageData.iloc[2,j]/12*mortgageData.iloc[0,j]/(1+mortgageData.iloc[2,j]/12)
             if mortgageData.iloc[1,j] == max_len-i:
-                addition += mortgageData.iloc[0,j]/(1+mortgageData.iloc[2,j])
+                addition += mortgageData.iloc[0,j]/(1+mortgageData.iloc[2,j]/12)
             if i>0:
-                addition += value[i-1]/(1+mortgageData.iloc[2,j])
+                addition += value[i-1]/(1+mortgageData.iloc[2,j]/12)
             value.append(addition)
         if j == 0:
             total_value = value
@@ -67,12 +67,14 @@ def Compute_Absolute_MSE(expected, real):
     return MSE
 
 
-#This function recursively computes the cashflows resulting from a  ortgage portfolio and a sequence of prepayment rates.
-def Altered_Cashflows(empty_list, prepayment_rates, portfolio):
+#This function recursively computes the cashflows per mortgage resulting from a  mortgage portfolio 
+#and a sequence of prepayment rates. IMPORTANT: empty_list is a list of 6 empty lists, one for each mortgage
+def Altered_Cashflows(empty_list, prepayment_rates, mortgageData):
+    portfolio = mortgageData.copy()
     if not prepayment_rates:
         return empty_list
-    cash_flow = 0
     for i in range(6):
+        cash_flow = 0;
         if portfolio.iloc[1,i] > 0:
             cash_flow += prepayment_rates[0]*portfolio.iloc[0,i]
             portfolio.iloc[0,i] -= prepayment_rates[0]*portfolio.iloc[0,i]
@@ -80,7 +82,39 @@ def Altered_Cashflows(empty_list, prepayment_rates, portfolio):
             if portfolio.iloc[1,i] == 1:
                 cash_flow += portfolio.iloc[0,i]
             portfolio.iloc[1,i] = portfolio.iloc[1,i] - 1
-    empty_list.append(cash_flow)
+            empty_list[i].append(cash_flow)
     new_rates = prepayment_rates[1:]
     output = Altered_Cashflows(empty_list, new_rates, portfolio)
     return output
+
+
+#This function computes the total cashflows for the entire portfolio for given cashflows per mortgage
+def Total_Altered_Cashflows(cash_flows):
+    result = []
+    for i in range(120):
+        cash_flow = 0
+        for j in range(6):
+            if len(cash_flows[j]) > i:
+                cash_flow += cash_flows[j][i]
+        result.append(cash_flow)
+    return result
+
+
+#This function caculates the value of the portfolio when prepayment is involved
+def Altered_Value(cash_flows, portfolio):
+    total_value = []
+    for i in range(6):
+        value = []
+        for j in range(120):
+            addition = 0
+            if portfolio.iloc[1][i] >= 120-j:
+                addition += cash_flows[i][120-j-1]/(1+portfolio.iloc[2,i]/12)
+            if j > 0:
+                addition += value[j-1]/(1+portfolio.iloc[2,i]/12)
+            value.append(addition)
+        if i == 0:
+            total_value = value
+        if i > 0:
+            total_value = [sum(x) for x in zip(total_value, value)]
+    total_value.reverse()
+    return total_value
