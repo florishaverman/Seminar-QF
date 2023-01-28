@@ -9,6 +9,7 @@ import pandas as pd
 from operator import add
 
 
+# This method returns a list of cash flows that would occur starting from the present if there would be no prepayments. It takes the original mortgage portfolio as input.
 def Compute_Cash_Flows(mortgageData):
     max_len = max(mortgageData.iloc[1])
     cash_flows = []
@@ -22,7 +23,8 @@ def Compute_Cash_Flows(mortgageData):
         cash_flows.append(addition)
     return cash_flows
 
-    
+
+# This method computes for the next 120 months (The longest loan has an FIRP of 10 years) the net present value of the mortgage portfolio at that time    
 def Compute_Time_Values(mortgageData):
     max_len = max(mortgageData.iloc[1])
     total_value = []
@@ -45,6 +47,7 @@ def Compute_Time_Values(mortgageData):
     return total_value
     
 
+# This method computes the relative MSE (relative to the expected cash flows or value) with the expected and predicted series as input.
 def Compute_Relative_MSE(expected, real):
     N = len(expected)
     MSE = 0
@@ -54,6 +57,7 @@ def Compute_Relative_MSE(expected, real):
     return MSE
 
 
+# This method computes the MSE in absolute terms and as such is probably completely irrelevant.
 def Compute_Absolute_MSE(expected, real):
     N = len(expected)
     MSE = 0
