@@ -8,7 +8,7 @@ import pandas as pd  # for reading excel data file
 
 # Simulate interest rates using Hull-White model
 
-def simulationHullWhite(alpha, sigma, r_zero, delta, T):
+def simulationHullWhite(alpha, sigma, popt, r_zero, delta, T):
     # Number of steps per period
     S = math.floor(1 / delta)
 
@@ -19,7 +19,7 @@ def simulationHullWhite(alpha, sigma, r_zero, delta, T):
     # Simulate T months with S steps per month
     for t in range(T):
         # Here: determine theta for current period
-        theta_curr = theta(kappa=alpha, sigma=sigma, t=t)
+        theta_curr = theta(kappa=alpha, sigma=sigma, t=t, *popt)
         for s in range(0, S):
             # Euler discretization for simulating next step
             sim = rates[-1] + (theta_curr - alpha * rates[-1]) * delta + sigma * np.random.normal(0, 1)

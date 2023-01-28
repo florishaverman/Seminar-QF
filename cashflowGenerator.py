@@ -1,14 +1,7 @@
 from prepayment import loadINGData, probPrepayment
 from interestRate import simulationHullWhite
+import HullWhiteMethods as hw
 import pickle  # To save logistic model, to avoid training each time.
-
-# Parameters as input for Hull-White
-theta = 1
-alpha = 1
-sigma = 1
-r_zero = 1
-delta = 1
-T = 1
 
 # Mortgage information
 data = loadINGData('Current Mortgage portfolio')
@@ -18,15 +11,29 @@ notional = data.loc[0]
 FIRP = data.loc[1]*12  # In months
 coupon_rate = data.loc[2]
 
+# Forward curve parameters used in theta
+current_euribor = loadINGData('Current Euribor Swap Rates')
+current_euribor = current_euribor.loc[:, 'Swap rate']
+popt = hw.curve_parameters(current_euribor)
+
+# Parameters as input for Hull-White
+# Obtained from swaption data
+alpha = 1  # = kappa
+sigma = 1
+r_zero = 1
+delta = 100
+T = 120
+
+
 # Simulate cashflows large number of times
 R = 1
 prepayment_model = pickle.load(open('prepayment_model.sav', 'rb'))
 # Store all simulated cashflows
 sim_cashflows = []
-for r in range(1, R):
+for r in range(R):
     # Here we obtain a list of simulated interest rates under Hull-White
     # should theta vary over time?
-    interest_rates = simulationHullWhite(theta, alpha, sigma, r_zero, delta, T)
+    interest_rates = simulationHullWhite(alpha, sigma, popt, r_zero, delta, T)
     # Here we determine the incentive for each period and for each mortgage
     cashflows = []
     for i in range(0, len(notional)):
@@ -49,4 +56,5 @@ for r in range(1, R):
     # Append this simulation run to all simulated cashflows
     sim_cashflows.append(cashflows)
 
+print(sim_cashflows)
 
