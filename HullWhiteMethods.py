@@ -33,12 +33,11 @@ def B(kappa, tau):
 def integrand(T, z, kappa, tau, sigma):
     function = theta(kappa, sigma, T - z) * B(kappa, z)
     return function
-
-
-# This function defines the time varying mean theta(t) for the Hull-White model
-def theta(kappa, sigma, t):
-    value = 1 / kappa * func_deriv(t, a, b, c, d) + func(t, a, b, c, d) + (sigma ** 2) / (2 * kappa ** 2) * (
-                1 - exp(-2 * kappa * t))
+    
+    
+#This function defines the time varying mean theta(t) for the Hull-White model    
+def theta(kappa, sigma, t,a,b,c,d):
+    value = 1/kappa*func_deriv(t,a,b,c,d) + func(t,a,b,c,d) + (sigma**2)/(2*kappa**2)*(1-exp(-2*kappa*t))
     return value
 
 
