@@ -34,6 +34,9 @@ for r in range(R):
     # Here we obtain a list of simulated interest rates under Hull-White
     # should theta vary over time?
     interest_rates = simulationHullWhite(alpha, sigma, popt, r_zero, delta, T)
+    # Determine the swap rates up to last tenor
+
+
     # Here we determine the incentive for each period and for each mortgage
     cashflows = []
     for i in range(0, len(notional)):
@@ -41,7 +44,7 @@ for r in range(R):
         while FIRP[i] > 0 and notional[i] > 0:  # for FIRP:must include zero or not?
             curr_swap = 3  # fix this later, must go over time as well here
             ref_rate = curr_swap + margin
-            incentive = coupon_rate[i] + ref_rate
+            incentive = coupon_rate[i] - ref_rate
             # Obtain prepayment rate from prepayment model
             prepay_rate_mortgage = probPrepayment(prepayment_model, incentive)
             prepay_rate.append(prepay_rate_mortgage)
