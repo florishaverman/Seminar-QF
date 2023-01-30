@@ -19,7 +19,7 @@ def simulationHullWhite(alpha, sigma, popt, r_zero, delta, T):
     # Simulate T months with S steps per month
     for t in range(T):
         # Here: determine theta for current period
-        theta_curr = theta(kappa=alpha, sigma=sigma, t=t, *popt)
+        theta_curr = theta(alpha, sigma, t, *popt)
         for s in range(0, S):
             # Euler discretization for simulating next step
             sim = rates[-1] + alpha * (theta_curr - rates[-1]) * delta + sigma * np.random.normal(0, 1)

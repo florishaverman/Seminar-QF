@@ -18,12 +18,11 @@ popt = hw.curve_parameters(current_euribor)
 
 # Parameters as input for Hull-White
 # Obtained from swaption data
-alpha = 1  # = kappa
-sigma = 1
-r_zero = 1
+alpha = 1.5  # = kappa
+sigma = 0.2633
+r_zero = current_euribor[0]
 delta = 100
 T = 120
-
 
 # Simulate cashflows large number of times
 R = 1
@@ -34,8 +33,18 @@ for r in range(R):
     # Here we obtain a list of simulated interest rates under Hull-White
     # should theta vary over time?
     interest_rates = simulationHullWhite(alpha, sigma, popt, r_zero, delta, T)
-    # Determine the swap rates up to last tenor
 
+    # Determine the swap rates up to last tenor by approximating bond prices
+    tenor = T
+    bond_price, swap_rates = [], []
+    sum_bond_price = 0
+    step_length_swap = 1 / 12
+    for t in range(1, tenor):
+        bp = hw.bondPrice(t, alpha, t, sigma, interest_rates[0], *popt)
+        bond_price.append(bp)
+        sum_bond_price += bp
+        sr = (1 - bp)/(step_length_swap * sum_bond_price)
+        swap_rates.append(sr)
 
     # Here we determine the incentive for each period and for each mortgage
     cashflows = []

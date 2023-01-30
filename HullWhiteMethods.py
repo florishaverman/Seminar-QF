@@ -36,7 +36,7 @@ def bondPrice(T, kappa, tau, sigma, r, a, b, c, d):
 
 
 # This function is to be integrated for A() and therefore needs to be defined
-def integrand(T, z, kappa, tau, sigma, a, b, c, d):
+def integrand(T, z, kappa, sigma, a, b, c, d):
     function = theta(kappa, sigma, T - z, a, b, c, d) * B(kappa, z)
     return function
 
@@ -50,7 +50,7 @@ def theta(kappa, sigma, t, a, b, c, d):
 
 # This function integrates integrand()
 def integral(T, kappa, tau, sigma, a, b, c, d):
-    value = quad(integrand, 0, tau, args=(T, kappa, tau, sigma))[0]
+    value = quad(integrand, 0, tau, args=(T, kappa, sigma, a, b, c, d))[0]
     return value
 
 
