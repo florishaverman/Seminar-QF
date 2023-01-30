@@ -9,7 +9,7 @@ import time # to time the functions
 import pickle #To save logistic model, to avoid training each time. 
 import platform #To check the system
 
-print('hello world from floris')
+print('hello world from Floris')
 
 ### Function to load the data from ING
 ### need to check if this works on a windows, otherwise we need to use if statements. Discuss!
@@ -48,11 +48,10 @@ def trainPrepaymentModel(filename, prepaymentSummary, rescaleSize = 10000):
     print(len(X))
     print(len(y))
 
-    logr = linear_model.LogisticRegression()
-    logr.fit(np.array(X).reshape(-1,1),np.array(y))
-
+    logr = linear_model.LogisticRegression(fit_intercept= True).fit(np.array(X).reshape(-1,1),np.array(y))
+#
     endTime = time.time()
-    print(f"Traing took {round(endTime- startTime,1)} seconds")
+    print(f"Training took {round(endTime- startTime,1)} seconds")
 
     # save the model to disk
     pickle.dump(logr, open(filename, 'wb'))
@@ -88,6 +87,7 @@ def main():
     ### Load the prepayment model from disk, so no need to retrain every time ###
     loaded_model = pickle.load(open('prepayment_model.sav', 'rb'))
     print(f"The coefficients of the model are {loaded_model.coef_}")
+    print(f"The coefficients of the model are {loaded_model.intercept_}")
 
     #printPrepaymentOverview(incentives)
     values = []
@@ -95,7 +95,7 @@ def main():
         values.append(-0.05 + i * 0.0025)
     printPrepaymentOverview(loaded_model, values, showScaterPlot = False, toPrint = False)
 
-main()
+#main()
 
 """ 
 ### this is all trash ###
