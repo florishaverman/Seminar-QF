@@ -74,21 +74,23 @@ def Compute_Absolute_MSE(expected, real):
 
 #This function recursively computes the cashflows per mortgage resulting from a  mortgage portfolio 
 #and a sequence of prepayment rates. IMPORTANT: empty_list is a list of 6 empty lists, one for each mortgage
+# and prepayment_rates is a list of six prepayment rate lists. So one for every mortgage
 def Altered_Cashflows(empty_list, prepayment_rates, mortgageData):
     portfolio = mortgageData.copy()
-    if not prepayment_rates:
+    new_rates = prepayment_rates
+    if not prepayment_rates[0]:
         return empty_list
     for i in range(6):
         cash_flow = 0;
         if portfolio.iloc[1,i] > 0:
-            cash_flow += prepayment_rates[0]*portfolio.iloc[0,i]
-            portfolio.iloc[0,i] -= prepayment_rates[0]*portfolio.iloc[0,i]
+            cash_flow += prepayment_rates[i][0]*portfolio.iloc[0,i]
+            portfolio.iloc[0,i] -= prepayment_rates[i][0]*portfolio.iloc[0,i]
             cash_flow += portfolio.iloc[2,i]/12*portfolio.iloc[0,i]
             if portfolio.iloc[1,i] == 1:
                 cash_flow += portfolio.iloc[0,i]
             portfolio.iloc[1,i] = portfolio.iloc[1,i] - 1
-            empty_list[i].append(cash_flow)
-    new_rates = prepayment_rates[1:]
+        empty_list[i].append(cash_flow)
+        new_rates[i] = prepayment_rates[i][1:]
     output = Altered_Cashflows(empty_list, new_rates, portfolio)
     return output
 
