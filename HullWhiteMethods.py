@@ -16,10 +16,10 @@ from math import tan
 
 
 # This Function Computes A() in the bond curve expression in the Hull-White model
-def A(T, kappa, tau, sigma):
-    A = -(sigma ** 2) / (4 * kappa ** 3) * (
-                3 + exp(-2 * kappa * tau) - 4 * exp(-kappa * tau) - 2 * kappa * tau) + kappa * integral(T, kappa, tau,
-                                                                                                        sigma)
+def A(T, kappa, tau, sigma, a, b, c, d):
+    A = -(sigma ** 2) / (4 * kappa ** 3) * \
+        (3 + exp(-2 * kappa * tau) - 4 * exp(-kappa * tau) - 2 * kappa * tau) \
+        + kappa * integral(T, kappa, tau, sigma, a, b, c, d)
     return A
 
 
@@ -29,27 +29,34 @@ def B(kappa, tau):
     return B
 
 
+# Determine the analytical zero-coupon bond price for Hull-White
+def bondPrice(T, kappa, tau, sigma, r, a, b, c, d):
+    bond_price = exp(A(T, kappa, tau, sigma, a, b, c, d) + B(kappa, tau) * r)
+    return bond_price
+
+
 # This function is to be integrated for A() and therefore needs to be defined
-def integrand(T, z, kappa, tau, sigma):
-    function = theta(kappa, sigma, T - z) * B(kappa, z)
+def integrand(T, z, kappa, tau, sigma, a, b, c, d):
+    function = theta(kappa, sigma, T - z, a, b, c, d) * B(kappa, z)
     return function
-    
-    
-#This function defines the time varying mean theta(t) for the Hull-White model    
-def theta(kappa, sigma, t,a,b,c,d):
-    value = 1/kappa*func_deriv(t,a,b,c,d) + func(t,a,b,c,d) + (sigma**2)/(2*kappa**2)*(1-exp(-2*kappa*t))
+
+
+# This function defines the time varying mean theta(t) for the Hull-White model
+def theta(kappa, sigma, t, a, b, c, d):
+    value = 1 / kappa * func_deriv(t, a, b, c, d) + func(t, a, b, c, d) + (sigma ** 2) / (2 * kappa ** 2) * \
+            (1 - exp(-2 * kappa * t))
     return value
 
 
 # This function integrates integrand()
-def integral(T, kappa, tau, sigma):
+def integral(T, kappa, tau, sigma, a, b, c, d):
     value = quad(integrand, 0, tau, args=(T, kappa, tau, sigma))[0]
     return value
 
 
 # This function is a generic polynomial of the third order used to fit the swap curve
 def func(x, a, b, c, d):
-    return a * (x) ** 3 + b * (x) ** 2 + c * (x) + d
+    return a * x ** 3 + b * x ** 2 + c * x + d
 
 
 # This function fits the parameters of a given function to given data

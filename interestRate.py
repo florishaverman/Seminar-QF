@@ -22,7 +22,7 @@ def simulationHullWhite(alpha, sigma, popt, r_zero, delta, T):
         theta_curr = theta(kappa=alpha, sigma=sigma, t=t, *popt)
         for s in range(0, S):
             # Euler discretization for simulating next step
-            sim = rates[-1] + (theta_curr - alpha * rates[-1]) * delta + sigma * np.random.normal(0, 1)
+            sim = rates[-1] + alpha * (theta_curr - rates[-1]) * delta + sigma * np.random.normal(0, 1)
             rates.append(sim)
         # Append interest rate to matrix of interest rates
         interest_rate = rates[-1]
