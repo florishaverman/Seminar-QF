@@ -1,15 +1,17 @@
 from prepayment import loadINGData, probPrepayment
 from interestRate import simulationHullWhite
+from Objective_Function_Methods import Altered_Cashflows
 import HullWhiteMethods as hw
 import pickle  # To save logistic model, to avoid training each time.
 
 # Mortgage information
 data = loadINGData('Current Mortgage portfolio')
 data = data.drop('Variable', axis=1)
+data.loc[1] = data.loc[1] * 12  # In months
 margin = data.loc[4, 1]
-notional = data.loc[0]
-FIRP = data.loc[1]*12  # In months
-coupon_rate = data.loc[2]
+notional = data.loc[0].tolist()
+FIRP = data.loc[1].tolist()  # In months
+coupon_rate = data.loc[2].tolist()
 
 # Forward curve parameters used in theta
 current_euribor = loadINGData('Current Euribor Swap Rates')
@@ -33,40 +35,33 @@ for r in range(R):
     # Here we obtain a list of simulated interest rates under Hull-White
     # should theta vary over time?
     interest_rates = simulationHullWhite(alpha, sigma, popt, r_zero, delta, T)
-
-    # Determine the swap rates up to last tenor by approximating bond prices
     tenor = T
-    bond_price, swap_rates = [], []
-    sum_bond_price = 0
-    step_length_swap = 1 / 12
-    for t in range(1, tenor):
-        bp = hw.bondPrice(t, alpha, t, sigma, interest_rates[0], *popt)
-        bond_price.append(bp)
-        sum_bond_price += bp
-        sr = (1 - bp)/(step_length_swap * sum_bond_price)
-        swap_rates.append(sr)
+    prepay_rate = [[] for _ in range(6)]
+    while tenor > 0:
+        # Determine the swap rates up to last tenor by approximating bond prices
+        bond_price, swap_rates = [], []
+        sum_bond_price = 0
+        step_length_swap = 1 / 12
+        for t in range(tenor):
+            bp = hw.bondPrice(2, alpha, 1, sigma, interest_rates[T - tenor], *popt)
+            bond_price.append(bp)
+            sum_bond_price += bp
+            sr = (1 - bp) / (step_length_swap * sum_bond_price)
+            swap_rates.append(sr)
 
-    # Here we determine the incentive for each period and for each mortgage
-    cashflows = []
-    for i in range(0, len(notional)):
-        prepay_rate, cashflows_mortgage = [], []
-        while FIRP[i] > 0 and notional[i] > 0:  # for FIRP:must include zero or not?
-            curr_swap = 3  # fix this later, must go over time as well here
-            ref_rate = curr_swap + margin
-            incentive = coupon_rate[i] - ref_rate
-            # Obtain prepayment rate from prepayment model
-            prepay_rate_mortgage = probPrepayment(prepayment_model, incentive)
-            prepay_rate.append(prepay_rate_mortgage)
-            # Generate cashflow for each mortgage
-            cashflows_mortgage.append(prepay_rate_mortgage * notional[i])
+        # Determine prepayment rate per mortgage
+        for i in range(6):
+            if FIRP[i] > 0:
+                ref_rate = swap_rates[FIRP[i] - 1] + margin
+                incentive = coupon_rate[i] - ref_rate
+                prepay_rate_mortgage = probPrepayment(prepayment_model, incentive)
+                prepay_rate[i].append(prepay_rate_mortgage)
+        # Update FIRP and tenor
+        FIRP[:] = [f - 1 for f in FIRP]
+        tenor -= 1
 
-            # Here update notional, FIRP
-            notional[i] = notional[i] - cashflows_mortgage[-1]
-            FIRP[i] = FIRP[i] - 1
-        # Add to all cashflows of this simulation
-        cashflows.append(cashflows_mortgage)
-    # Append this simulation run to all simulated cashflows
-    sim_cashflows.append(cashflows)
-
+    # Generate simulated cashflows based on prepayment rate
+    sc = Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
+    sim_cashflows.append(sc)
 print(sim_cashflows)
 
