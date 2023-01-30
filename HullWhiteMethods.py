@@ -15,7 +15,7 @@ import time
 from math import tan
 
 
-# This Function Computes A() in the bondcurve expression in the Hull-White model
+# This Function Computes A() in the bond curve expression in the Hull-White model
 def A(T, kappa, tau, sigma):
     A = -(sigma ** 2) / (4 * kappa ** 3) * (
                 3 + exp(-2 * kappa * tau) - 4 * exp(-kappa * tau) - 2 * kappa * tau) + kappa * integral(T, kappa, tau,
@@ -23,7 +23,7 @@ def A(T, kappa, tau, sigma):
     return A
 
 
-# This Function Computes B() in the bondcurve expression in the Hull-White model
+# This Function Computes B() in the bond curve expression in the Hull-White model
 def B(kappa, tau):
     B = -1 / kappa * (1 - exp(-kappa * tau))
     return B
@@ -38,6 +38,7 @@ def integrand(T, z, kappa, tau, sigma):
 #This function defines the time varying mean theta(t) for the Hull-White model    
 def theta(kappa, sigma, t,a,b,c,d):
     value = 1/kappa*func_deriv(t,a,b,c,d) + func(t,a,b,c,d) + (sigma**2)/(2*kappa**2)*(1-exp(-2*kappa*t))
+    return value
 
 
 # This function integrates integrand()
