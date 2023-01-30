@@ -9,7 +9,6 @@ import time  # to time the functions
 import pickle  # To save logistic model, to avoid training each time.
 import platform  # To check the system
 
-print('hello world from Floris')
 
 
 ### Function to load the data from ING
@@ -84,6 +83,7 @@ def printPrepaymentOverview(model, values, showScaterPlot=False, toPrint=False):
 
 
 def main():
+    print('hello world from Floris')
     ### Load the created pivot table.
     prepaymentSummary = loadINGData('Prepayment summary')
 
@@ -101,28 +101,6 @@ def main():
     for i in range(50):
         values.append(-0.05 + i * 0.0025)
     printPrepaymentOverview(loaded_model, values, showScaterPlot=False, toPrint=False)
-
+    print('prepayment.py is finished')
 
 #main()
-
-""" 
-### this is all trash ###
-plt.scatter(X, y)
-plt.show()
-
-#print(prepaymentData)
-incentive = prepaymentData["Incentive"].to_numpy()
-print(incentive)
-ppRate = prepaymentData["Monthly pp rate"].to_numpy()
-print(ppRate)
-
-#spliting the prepayment data dependent variable into binary instead of continous variable.
-plt.scatter(incentive, ppRate)
-plt.show()
-
-
-logr = linear_model.LogisticRegression()
-logr.fit(incentive.reshape(-1,1),ppRate)
-"""
-
-print('prepayment.py is finished')
