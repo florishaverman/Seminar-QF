@@ -16,16 +16,15 @@ from math import tan
 
 
 # This Function Computes A() in the bond curve expression in the Hull-White model
-def A(T, kappa, tau, sigma, a, b, c, d):
-    A = -(sigma ** 2) / (4 * kappa ** 3) * \
-        (3 + exp(-2 * kappa * tau) - 4 * exp(-kappa * tau) - 2 * kappa * tau) \
-        + kappa * integral(T, kappa, tau, sigma, a, b, c, d)
+def A(T, kappa, t, sigma, a, b, c, d):
+    A = kappa * integral(T, kappa, t, sigma, a, b, c, d) + sigma**2/(4*kappa**3) * \
+        (exp(-2*kappa*(T-t)) * (4*exp(kappa*(T-t)) - 1) - 3) + sigma**2*(T-t)/(2*kappa**2)
     return A
 
 
 # This Function Computes B() in the bond curve expression in the Hull-White model
 def B(kappa, tau):
-    B = -1 / kappa * (1 - exp(-kappa * tau))
+    B = 1 / kappa * (exp(-kappa * tau) - 1)
     return B
 
 
@@ -36,8 +35,8 @@ def bondPrice(T, kappa, tau, sigma, r, a, b, c, d):
 
 
 # This function is to be integrated for A() and therefore needs to be defined
-def integrand(T, z, kappa, sigma, a, b, c, d):
-    function = theta(kappa, sigma, T - z, a, b, c, d) * B(kappa, z)
+def integrand(T, t, kappa, sigma, a, b, c, d):
+    function = theta(kappa, sigma, T - t, a, b, c, d) * B(kappa, T - t)
     return function
 
 
@@ -49,8 +48,8 @@ def theta(kappa, sigma, t, a, b, c, d):
 
 
 # This function integrates integrand()
-def integral(T, kappa, tau, sigma, a, b, c, d):
-    value = quad(integrand, 0, tau, args=(T, kappa, sigma, a, b, c, d))[0]
+def integral(T, kappa, t, sigma, a, b, c, d):
+    value = quad(integrand, 0, T - t, args=(T, kappa, sigma, a, b, c, d))[0]
     return value
 
 
