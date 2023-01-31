@@ -17,7 +17,7 @@ from math import tan
 
 # This Function Computes A() in the bond curve expression in the Hull-White model
 def A(T, kappa, t, sigma, a, b, c, d):
-    A = kappa * integral(T, kappa, t, sigma, a, b, c, d) + sigma**2/(4*kappa**3) * \
+    A = kappa * Riemann(kappa, sigma, t, T, a, b, c, d) + sigma**2/(4*kappa**3) * \
         (exp(-2*kappa*(T-t)) * (4*exp(kappa*(T-t)) - 1) - 3) + sigma**2*(T-t)/(2*kappa**2)
     return A
 
