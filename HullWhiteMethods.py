@@ -70,3 +70,22 @@ def curve_parameters(data):
 # *popt as input, where popt is the output from curve_parameters()
 def func_deriv(x, a, b, c, d):
     return 3 * a * x ** 2 + 2 * b * x + c
+
+
+# This function returns a riemann sum as an approximation of an integral
+def Riemann(kappa, sigma, t, T, a, b, c, d):
+    value = 0
+    tau = T - t
+    for i in range(10000):
+        variable = tau/10000 * i
+        value += theta(kappa, sigma, variable, a, b, c, d) * B(kappa, variable) * (tau/10000)
+    return value
+
+
+# This function returns an integral approximation using monte carlo simulation
+def Monte_Carlo(kappa, sigma, t, T, a, b, c, d):
+    value = 0
+    for i in range(10000):
+        draw = np.random.uniform(0, T - t)
+        value += theta(kappa, sigma, draw, a, b, c, d) * B(kappa, draw) * ((T - t)/10000)
+    return value
