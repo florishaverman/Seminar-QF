@@ -1,4 +1,6 @@
-function [output] = MSE(HWTree, vol, alpha, data, ValuationDate, VolDates, Maturities)
+function [output] = MSE(HWTree, parameters, data, ValuationDate, VolDates, Maturities)
+vol = parameters(1);
+alpha = parameters(2);
 output = 0;
 n = length(Maturities);
 VolCurve = vol;
