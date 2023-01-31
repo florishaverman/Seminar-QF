@@ -43,7 +43,7 @@ for r in range(R):
         sum_bond_price = 0
         step_length_swap = 1 / 12
         for t in range(tenor):
-            bp = hw.bondPrice(2, alpha, 1, sigma, interest_rates[T - tenor], *popt)
+            bp = hw.bondPrice(4, alpha, 1, sigma, interest_rates[T - tenor], *popt)
             bond_price.append(bp)
             sum_bond_price += bp
             sr = (1 - bp) / (step_length_swap * sum_bond_price)

@@ -1,9 +1,12 @@
 import pickle
+
+import numpy as np
+
 from prepayment import loadINGData, probPrepayment
 from interestRate import simulationHullWhite
 import HullWhiteMethods as hw
 from Objective_Function_Methods import Altered_Cashflows
-
+import matplotlib.pyplot as plt
 
 # Mortgage information
 data = loadINGData('Current Mortgage portfolio')
@@ -19,6 +22,8 @@ current_euribor = loadINGData('Current Euribor Swap Rates')
 current_euribor = current_euribor.loc[:, 'Swap rate']
 popt = hw.curve_parameters(current_euribor)
 
+x = np.linspace(1, 20, 20)
+plt.plot(hw.func(x, *popt))
 # Parameters as input for Hull-White
 # Obtained from swaption data
 alpha = 1.5  # = kappa
@@ -42,16 +47,16 @@ for r in range(R):
         sum_bond_price = 0
         step_length_swap = 1 / 12
         for t in range(tenor):
-            bp = hw.bondPrice(2, alpha, 1, sigma, interest_rates[T-tenor], *popt)
+            bp = hw.bondPrice(2, alpha, 1, sigma, interest_rates[T - tenor], *popt)
             bond_price.append(bp)
             sum_bond_price += bp
-            sr = (1 - bp)/(step_length_swap * sum_bond_price)
+            sr = (1 - bp) / (step_length_swap * sum_bond_price)
             swap_rates.append(sr)
 
         # Determine prepayment rate per mortgage
         for i in range(6):
             if FIRP[i] > 0:
-                ref_rate = swap_rates[FIRP[i]-1] + margin
+                ref_rate = swap_rates[FIRP[i] - 1] + margin
                 incentive = coupon_rate[i] - ref_rate
                 prepay_rate_mortgage = probPrepayment(prepayment_model, incentive)
                 prepay_rate[i].append(prepay_rate_mortgage)
@@ -63,3 +68,4 @@ for r in range(R):
     sc = Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
     sim_cashflows.append(sc)
 
+print(hw.integral(120, alpha, 120, sigma, *popt))
