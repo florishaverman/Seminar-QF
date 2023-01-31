@@ -1,3 +1,4 @@
+import math
 import pickle
 
 import numpy as np
@@ -68,4 +69,12 @@ for r in range(R):
     sc = Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
     sim_cashflows.append(sc)
 
-print(hw.integral(120, alpha, 120, sigma, *popt))
+print(hw.integral(10, alpha, 0, sigma, *popt))
+print(hw.B(alpha, 10-0))
+print(hw.func_deriv(10, *popt))
+print(3*popt[0]*100 + 2*popt[1]*10 + popt[2])
+print(hw.func(10, *popt))
+print(popt[0]*10**3 + popt[1]*10**2 + popt[2]*10 + popt[3])
+print(hw.theta(alpha, sigma, 10, *popt))
+print(1/1.5 * hw.func_deriv(10, *popt) + hw.func(10, *popt) + sigma**2/(2*alpha**2)*(1-math.exp((-2*alpha*10))))
+print(hw.A(10, alpha, 0, sigma, *popt))
