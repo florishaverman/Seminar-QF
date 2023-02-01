@@ -2,6 +2,11 @@ from prepayment import *
 from interestRate2 import *
 from cashflows import *
 
+""" 
+Main.py should be able to execute all the code
+
+@author: Floris
+"""
 
 def main():
     print("Hello World from main")

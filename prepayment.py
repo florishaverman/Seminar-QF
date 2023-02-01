@@ -9,11 +9,21 @@ import time  # to time the functions
 import pickle  # To save logistic model, to avoid training each time.
 import platform  # To check the system
 
+"""
+This file contains functions gegarding the prepayment model.
+It can be used to train a prepayment model using trainPrepaymentModel()
+The function getPrepaymentModel( fileName) returns a prepayment model, prepayment_model.sav can be used as file name
+The function probPrepayment(model, incentive) returns the probabilty of prepayment for a given model and incentive level. 
+
+@author: Floris
+"""
+
+
+
 
 
 ### Function to load the data from ING
 ### need to check if this works on a windows, otherwise we need to use if statements. Discuss!
-
 def loadINGData(sheet_name):
     if (platform.system() == 'Darwin'):
         return pd.read_excel('data/DataING.xlsx', sheet_name=sheet_name)  # Error in this line? Ask Floris
@@ -26,7 +36,12 @@ def rescale(data, variable_name, scaling):
     temp = data[variable_name].to_numpy()
     return np.round_(temp / scaling)
 
-
+"""
+This function is used to train a prepayment model.
+filename: is the name underwhich the trained model is stored.
+prepaymentSummary: The summerized version of prepayments. Here the prepayed and not prepayed amounts are calculated and grouped by incentive level. 
+rescaleSize: The amount of money for which a data point is made, the default in 10000, although 1000 is also already been done.
+"""
 def trainPrepaymentModel(filename, prepaymentSummary, rescaleSize=10000):
     startTime = time.time()
 
@@ -47,10 +62,6 @@ def trainPrepaymentModel(filename, prepaymentSummary, rescaleSize=10000):
             X.append(incentive[i])
             y.append(0)
 
-    print(len(X))
-    print(len(y))
-
-
     logr = linear_model.LogisticRegression(fit_intercept= True).fit(np.array(X).reshape(-1,1),np.array(y))
     
     endTime = time.time()
@@ -62,14 +73,25 @@ def trainPrepaymentModel(filename, prepaymentSummary, rescaleSize=10000):
     print(f"model is saved under the name {filename}")
 
 
-### This function calculates the probability of prepayment for a given model and incentive
-def probPrepayment(model, x):
-    log_odds = model.coef_ * x + model.intercept_
+""" 
+This function calculates the probability of prepayment for a given model and incentive
+model: A trained prepayment model, can be obtained by getPrepaymentModel()
+incentive: a level of incentive
+"""
+def probPrepayment(model, incentive):
+    log_odds = model.coef_ * incentive + model.intercept_
     odds = np.exp(log_odds)
     probability = odds / (1 + odds)
     return probability[0]
 
+""" 
+This fuction returns a trained prepayment model
+fileName: There are different trained model, the default is stored in prepayment_model.sav
+"""
+def getPrepaymentModel(fileName):
+     return pickle.load(open(fileName, 'rb'))
 
+#Not a main function, mainly used for testing during building
 def printPrepaymentOverview(model, values, showScaterPlot=False, toPrint=False):
     if (toPrint): print('The prepayment level for echt level of incentive is')
     probabilities = probPrepayment(model, values)
@@ -80,7 +102,6 @@ def printPrepaymentOverview(model, values, showScaterPlot=False, toPrint=False):
     if (showScaterPlot):
         plt.scatter(values, probabilities)
         plt.show()
-
 
 def main():
     print('hello world from Floris')

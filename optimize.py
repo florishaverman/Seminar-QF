@@ -3,12 +3,20 @@ from scipy.optimize import minimize
 import hedging
 import cashflows
 import time 
-def rosen(x):
-    """The Rosenbrock function"""
-    return sum(100.0*(x[1:]-x[:-1]**2.0)**2.0 + (1-x[:-1])**2.0)
+
+""" optimize.py is used of the optimization of the hedging portfolio.
+
+@autor: Floris
+"""
 
 
+""" This function calculates the objective value of a given vector x of the weights of the hedging portfolio.
+This is a bit of a complicated function and is still undergoing changes
 
+x: a 1D vector of weights, where [j] is the weigth coresponding to the j-th hedging instrument
+
+return: the objective value
+"""
 def objective(x):
     N = len(x)
     T = len(x)
@@ -37,16 +45,17 @@ def objective(x):
     return value
 
 
-startTime = time.time()
+""" This function optimizes the fuction objective """
+def optimize():
+    startTime = time.time()
 
-x0 = np.array([10000 for t in range(20)])
-# res = minimize(objective, x0, options={'disp': True})
-# print(res.x)
+    
+    x0 = np.array([10000 for t in range(10)])
+    print('optimization started')
+    res = minimize(objective, x0, options={'disp': True})
+    print(res.x)
 
-P =cashflows.getAllSimCashflows(2)
-print(P[0][:20])
-print()
-print(P[1][:20])
-endTime = time.time()
-print(f"Calculating cashflows took {round(endTime- startTime,1)} seconds")
-# print(objective([1 for t in range(120)]))
+    endTime = time.time()
+    print(f"Calculating cashflows took {round(endTime- startTime,1)} seconds")
+    # print(objective([1 for t in range(120)]))
+optimize()
