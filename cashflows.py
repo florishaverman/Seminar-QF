@@ -47,21 +47,39 @@ def getPrepayments(coupon_rate, FIRP, R, hullWhiteParam):
 
     for r in range(R):
         interest_rates = simulationHullWhite(alpha, sigma, popt, r_zero, delta, T, random)
+        swap_rates = getSwapRates(interest_rates, 120, hullWhiteParam)
         for i in range(numPortfolios):
             for t in range(FIRP[i]):
                 # ref_rate = 0.015 + interest_rates[t]#should be calcuated with the swap rate, use swap rate of 0 now.
-                ref_rate = 0.015 + random.random()*0.03
+                ref_rate = 0.015 + swap_rates[t]
                 incentive = coupon_rate[i] - ref_rate
                 sim_prepay_rates[r][i][t] = round(probPrepayment(prepayment_model, incentive)[0], 5)
     return sim_prepay_rates
 
 
-""" This function returns an array with swap rates
+""" This function returns an array with swap rates. 
+interestRates: A 1D vector of interest rates of length at least the length of the portfolio
+nrTenor: Length of portfolio and longest tenor of desired swap rate
+hullWhiteParam: A vector containing the hull white parameters: [alpha, sigma, popt, r_zero, delta, T, random]
 
 return: 1D array, where [t] is the swap rate with maturity t
 """
-def getSwapRates(interestRates):
+def getSwapRates(interestRates, nrTenor, hullWhiteParam):
+    bond_price, swap_rates = [], []
+    sum_bond_price = 0
+    step_length = 1/12
+    alpha = hullWhiteParam[0]
+    sigma = hullWhiteParam[1]
+    popt = hullWhiteParam[2]
 
+    # For each t up to tenor compute the swap rate by (1 - P(0,t)) /(1/12 * sum all bonds up to t)
+    for t in range(nrTenor):
+        bp = hw.bondPrice(t, alpha, t, sigma, interestRates[t], *popt)
+        bond_price.append(bp)
+        sum_bond_price += bp
+        sr = (1 - bp) / (step_length * sum_bond_price)
+        swap_rates.append(sr)
+    return swap_rates
 
 
 """ This fuctions returns a 1D array with the cashflows for 1 portfolio, including prepayments, interest rate payments and final repayment.
