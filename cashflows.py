@@ -55,6 +55,15 @@ def getPrepayments(coupon_rate, FIRP, R, hullWhiteParam):
                 sim_prepay_rates[r][i][t] = round(probPrepayment(prepayment_model, incentive)[0], 5)
     return sim_prepay_rates
 
+
+""" This function returns an array with swap rates
+
+return: 1D array, where [t] is the swap rate with maturity t
+"""
+def getSwapRates(interestRates):
+
+
+
 """ This fuctions returns a 1D array with the cashflows for 1 portfolio, including prepayments, interest rate payments and final repayment.
 prepaymentRate: A 1D vector of prepayment rates of length at least the length of the portfolio
 notional: The notional value of the portfolio
