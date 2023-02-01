@@ -1,10 +1,10 @@
-from prepayment import loadINGData, probPrepayment
-from interestRate2 import simulationHullWhite
+from prepayment import *
+from interestRate2 import *
 import HullWhiteMethods as hw
 import pickle  # To save logistic model, to avoid training each time.
 import numpy as np
-import time  # to time the functions
-import math #for math
+
+
 
 
 def getPrepayments(coupon_rate, FIRP, R, hullWhiteParam):
@@ -26,7 +26,8 @@ def getPrepayments(coupon_rate, FIRP, R, hullWhiteParam):
         interest_rates = simulationHullWhite(alpha, sigma, popt, r_zero, delta, T, random)
         for i in range(numPortfolios):
             for t in range(FIRP[i]):
-                ref_rate = 0.015 #should be calcuated with the swap rate, use swap rate of 0 now.
+                # ref_rate = 0.015 + interest_rates[t]#should be calcuated with the swap rate, use swap rate of 0 now.
+                ref_rate = 0.015 + random.random()*0.03
                 incentive = coupon_rate[i] - ref_rate
                 sim_prepay_rates[r][i][t] = round(probPrepayment(prepayment_model, incentive)[0], 5)
     return sim_prepay_rates
@@ -81,12 +82,14 @@ def getAllSimCashflows(R):
     hullWhiteParam = [alpha, sigma, popt, r_zero, delta, T, random]
 
     sim_prepay_rates = getPrepayments(coupon_rate, FIRP, R, hullWhiteParam)
+    # print(sim_prepay_rates)
     Rcashflows = []
     for r in range(R):
         Rcashflows.append(getTotCashflows(sim_prepay_rates[r], notional, FIRP, coupon_rate))
     return Rcashflows
 
 def main():
+    print("Hello World from cashflows.py")
     startTime = time.time()
 
     R = 10
@@ -100,7 +103,7 @@ def main():
     print(f"Calculating cashflows took {round(endTime- startTime,1)} seconds")
     print('Cashflows.py is finished')
 
-main()
+# main()
 
 
 #sim_prepay_rates [r][i][t] where r is the simulation (1-R), i is the portfolio (1-6), t is the time (1-120)
