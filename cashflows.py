@@ -4,9 +4,32 @@ import HullWhiteMethods as hw
 import pickle  # To save logistic model, to avoid training each time.
 import numpy as np
 
+""" 
+
+Cashflows.py is used for calculating the simulated cashflows of the morgage portfolio
+
+The whole process is split up in different function. The basic order is:
+First the prepayment rates are calculated for all mortgage portfolios for each interation, based on the simulated interest rates from the Hull-White model
+These are given in a big 3D matrix with dimentions, for each simulation (r/R is used for this), each mortgage portfolio (i/T is used for this)
+and finally each time point (t/T is used for time). 
+
+This is used to create a 2D array with per simulation, the total cashflows at time t. Where the cashflows of the different portfolios are summed. 
+
+@author: Floris
+
+"""
 
 
+""" 
+This function returns a 3D matrix R x N x T with all the prepayment rates
+Thus getPrepayments(coupon_rate, FIRP, R, hullWhiteParam)[r][i][t] is the prepayment rate from the r-th simulation for portfolio i at time t. 
+coupon_rate: The vector of the coupon rates for each of the 6 portfolios
+FIRP: The vector of remain tems for each of the 6 portfolios
+R: The number of simulations
+hullWhiteParam: A vector containing the hull white parameters: [alpha, sigma, popt, r_zero, delta, T, random]
 
+return: a 3D array, where [r][i][t] is the prepayment rate from the r-th simulation for portfolio i at time t.
+"""
 def getPrepayments(coupon_rate, FIRP, R, hullWhiteParam):
     alpha = hullWhiteParam[0]
     sigma = hullWhiteParam[1]
@@ -32,6 +55,14 @@ def getPrepayments(coupon_rate, FIRP, R, hullWhiteParam):
                 sim_prepay_rates[r][i][t] = round(probPrepayment(prepayment_model, incentive)[0], 5)
     return sim_prepay_rates
 
+""" This fuctions returns a 1D array with the cashflows for 1 portfolio, including prepayments, interest rate payments and final repayment.
+prepaymentRate: A 1D vector of prepayment rates of length at least the length of the portfolio
+notional: The notional value of the portfolio
+FIRP: The remaining term of the  portfolio
+coupon_rate: The coupon rate of the portfolio
+
+return: 1D array, where [t] is the cashflow at time t. 
+"""
 def getCashflowPortfolio(prepaymentRate, notional, FIRP, coupon_rate):
     outstanding = notional
     cashflow = [0] *120
@@ -43,6 +74,15 @@ def getCashflowPortfolio(prepaymentRate, notional, FIRP, coupon_rate):
     cashflow[FIRP-1] = round(cashflow[FIRP-1] + outstanding, 4)
     return cashflow
 
+""" 
+This function calculates the cashflows of one simulation run.
+prepaymentRate: A 2D array of prepayment rates, where [i][t] is the prepayment rate of portfolio i at time t. 
+notional: The vector of the notional values for each of the 6 portfolios
+coupon_rate: The vector of the coupon rates for each of the 6 portfolios
+FIRP: The vector of remain tems for each of the 6 portfolios
+
+return: 2D array, where [i][t] is the cashflow of portfolio i at time t.
+"""
 def getAllCashflows(prepaymentRates, notional, FIRP, coupon_rate):
     numPortfolios = 6
     allCashflows = []
@@ -50,6 +90,15 @@ def getAllCashflows(prepaymentRates, notional, FIRP, coupon_rate):
         allCashflows.append(getCashflowPortfolio(prepaymentRates[i], notional[i], FIRP[i], coupon_rate[i]))
     return allCashflows
 
+""" 
+This functions calculates aggregates the cashflows by portfolio, resulting in the total cashflow at each point in time
+prepaymentRate: A 2D array of prepayment rates, where [i][t] is the prepayment rate of portfolio i at time t. 
+notional: The vector of the notional values for each of the 6 portfolios
+coupon_rate: The vector of the coupon rates for each of the 6 portfolios
+FIRP: The vector of remain tems for each of the 6 portfolios
+
+return: 1D array with the total cashflows at each point in time t. 
+"""
 def getTotCashflows(prepaymentRates, notional, FIRP, coupon_rate):
     cashflows = getAllCashflows(prepaymentRates, notional, FIRP, coupon_rate)
     totCashflows = [0] * 120
@@ -60,6 +109,15 @@ def getTotCashflows(prepaymentRates, notional, FIRP, coupon_rate):
         totCashflows[t] = tot
     return totCashflows
 
+""" 
+THIS IS THE MAIN FUNCTION
+
+This function creates a 2D array, where [r][t] is the cashflow of the r-th simulation at time time t.
+This functions uses the hull white parameters that are defined within this function. 
+R: This is the only import parameter needed and is the number of simulations
+
+return: 2D array, where [r][t] is the cashflow of the r-th simulation at time time t
+"""
 def getAllSimCashflows(R):
     data = loadINGData('Current Mortgage portfolio')
     data = data.drop('Variable', axis=1)
@@ -88,6 +146,7 @@ def getAllSimCashflows(R):
         Rcashflows.append(getTotCashflows(sim_prepay_rates[r], notional, FIRP, coupon_rate))
     return Rcashflows
 
+# used to try some stuff in this file. 
 def main():
     print("Hello World from cashflows.py")
     startTime = time.time()
@@ -104,53 +163,3 @@ def main():
     print('Cashflows.py is finished')
 
 # main()
-
-
-#sim_prepay_rates [r][i][t] where r is the simulation (1-R), i is the portfolio (1-6), t is the time (1-120)
-# print(sim_prepay_rates[0][0])
-# cashflows2 = getCashflows(sim_prepay_rates[0], notional, FIRP, coupon_rate)
-# i= 0
-# print(cashflows2[i])
-# print(len(cashflows2[i]))
-# print(sum(cashflows2[i]))
-
- 
-""" 
- ### BIN ###
-def getCashflows(prepaymentRates, notional, FIRP, coupon_rate):
-    numPortfolios = len(notional)
-    numMonths = max(FIRP)
-    # numPortfolios = 2
-    # numMonths = 10
-    # cashflows = [[0] * numMonths] * numPortfolios
-    # print(FIRP[0])
-    
-    toReturn  = []
-    for i in range(numPortfolios):
-        cashflows = [0]*numMonths
-        for t in range(FIRP[i]):
-            #interest payment per month
-            interest = coupon_rate[i] * notional[i] / 12
-            # prepayments
-            prepayment = prepaymentRates[i][t] * notional[i]
-            notional[i] -= prepayment
-            cashflows.append( round(prepayment + interest, 4))
-                
-        # cashflows[i][FIRP[i]-1] = round(cashflows[i][FIRP[i]-1]+ notional[i], 4)
-        cashflows[-1] = round(cashflows[-1]+ notional[i], 4)
-        toReturn.append(cashflows)
-    return toReturn
-
-
-
-def A(t,T):
-    return math.exp(-B(t, T, alpha) )
-
-def B(t,T, alpha):
-    return (1 - math.exp(-alpha * (T - t))) / alpha
-
-def getBondPrice(t,T, rt, alpha):
-    return A(t,T) * math.exp(-B(t,T, alpha) * rt) """
-
-
-
