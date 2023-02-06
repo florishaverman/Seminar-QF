@@ -29,8 +29,4 @@ def simulationHullWhite(alpha, sigma, popt, r_zero, n_steps, T):
         sim_rates.append(interest_rate)
 
     # Output: list of interest rates for each month up to final period for one simulation run
-<<<<<<< HEAD
     return sim_rates
-=======
-    return sim_rates
->>>>>>> cashflow-generator

@@ -68,3 +68,46 @@ for i in range(120):
 sc = Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
 simulated_cashflows = Total_Altered_Cashflows(sc)
 print(simulated_cashflows)
+
+def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T, R):
+    margin = data.iloc[3, 1]
+    FIRP = data.iloc[1].tolist()  # In months
+    coupon_rate = data.iloc[2].tolist()
+    current_euribor = current_euribor.loc[:, 'Swap rate']
+    popt = hw.curve_parameters(current_euribor)
+    prepay_rate = [[] for _ in range(6)]
+    for r in range(R):
+        # Here we obtain a list of simulated interest rates under Hull-White
+        # should theta vary over time?
+        interest_rates = simulationHullWhite(alpha, sigma, popt, current_euribor[0], n_steps, T)
+        tenor = T
+        while tenor > 0:
+            # Determine the swap rates up to last tenor by approximating bond prices
+            bond_price, swap_rates = [], []
+            sum_bond_price = 0
+            step_length_swap = 1 / 12
+            for t in range(tenor):
+                bp = hw.bondPrice(4, alpha, 1, sigma, interest_rates[T - tenor], *popt)
+                bond_price.append(bp)
+                sum_bond_price += bp
+                sr = (1 - bp) / (step_length_swap * sum_bond_price)
+                swap_rates.append(sr)
+
+            # Determine prepayment rate per mortgage
+            for i in range(6):
+                if FIRP[i] > 0:
+                    ref_rate = swap_rates[FIRP[i] - 1] + margin
+                    incentive = coupon_rate[i] - ref_rate
+                    prepay_rate_mortgage = probPrepayment(prepayment_model, incentive)
+                    prepay_rate[i].append(prepay_rate_mortgage[0])
+            # Update FIRP and tenor
+            FIRP[:] = [f - 1 for f in FIRP]
+            tenor -= 1
+    # Generate simulated cashflows based on prepayment rate
+    for i in range(120):
+        for j in range(6):
+            if len(prepay_rate[j]) < i + 1:
+                prepay_rate[j].append(0)
+    sc = Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
+    simulated_cashflows = Total_Altered_Cashflows(sc)
+    print(simulated_cashflows)
