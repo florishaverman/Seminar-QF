@@ -82,3 +82,15 @@ def zcb_margin_optimization(desired_cashflows, simulated_cashflows):
         result.append(opt_monthly_bonds.x[0])
     print('Finished Optimization')
     return result
+
+
+def zcp_mean_margin_optimization(desired_cashflows, simulated_cashflows):
+    result = []
+    for t in range(len(desired_cashflows)):
+        required_cashflow = desired_cashflows[t]
+        value = 0
+        for i in range(len(simulated_cashflows)):
+            value += required_cashflow - simulated_cashflows[i][t]
+        value = value/len(simulated_cashflows)
+        result.append(value)
+    return result

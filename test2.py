@@ -17,3 +17,6 @@ simulated_cashflows = hq.generate_multiple_cashflows(data, current_euribor, prep
 desired_cashflows = ofm.Compute_Cash_Flows(data)
 optimal_x = hq.zcb_margin_optimization(desired_cashflows, simulated_cashflows)
 print(optimal_x)
+optimal_x2 = hq.zcp_mean_margin_optimization(desired_cashflows, simulated_cashflows)
+difference = [optimal_x[i]-optimal_x2[i] for i in range(len(optimal_x))]
+print(difference)
