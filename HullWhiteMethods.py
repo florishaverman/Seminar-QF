@@ -16,16 +16,15 @@ from math import tan
 
 
 # This Function Computes A() in the bond curve expression in the Hull-White model
-def A(T, kappa, tau, sigma, a, b, c, d):
-    A = -(sigma ** 2) / (4 * kappa ** 3) * \
-        (3 + exp(-2 * kappa * tau) - 4 * exp(-kappa * tau) - 2 * kappa * tau) \
-        + kappa * integral(T, kappa, tau, sigma, a, b, c, d)
+def A(T, kappa, t, sigma, a, b, c, d):
+    A = kappa * Riemann(kappa, sigma, t, T, a, b, c, d) + sigma**2/(4*kappa**3) * \
+        (exp(-2*kappa*(T-t)) * (4*exp(kappa*(T-t)) - 1) - 3) + sigma**2*(T-t)/(2*kappa**2)
     return A
 
 
 # This Function Computes B() in the bond curve expression in the Hull-White model
 def B(kappa, tau):
-    B = -1 / kappa * (1 - exp(-kappa * tau))
+    B = 1 / kappa * (exp(-kappa * tau) - 1)
     return B
 
 
@@ -36,8 +35,8 @@ def bondPrice(T, kappa, tau, sigma, r, a, b, c, d):
 
 
 # This function is to be integrated for A() and therefore needs to be defined
-def integrand(T, z, kappa, tau, sigma, a, b, c, d):
-    function = theta(kappa, sigma, T - z, a, b, c, d) * B(kappa, z)
+def integrand(T, t, kappa, sigma, a, b, c, d):
+    function = theta(kappa, sigma, T - t, a, b, c, d) * B(kappa, T - t)
     return function
 
 
@@ -49,8 +48,8 @@ def theta(kappa, sigma, t, a, b, c, d):
 
 
 # This function integrates integrand()
-def integral(T, kappa, tau, sigma, a, b, c, d):
-    value = quad(integrand, 0, tau, args=(T, kappa, tau, sigma))[0]
+def integral(T, kappa, t, sigma, a, b, c, d):
+    value = quad(integrand, 0, T - t, args=(T, kappa, sigma, a, b, c, d))[0]
     return value
 
 
@@ -71,3 +70,22 @@ def curve_parameters(data):
 # *popt as input, where popt is the output from curve_parameters()
 def func_deriv(x, a, b, c, d):
     return 3 * a * x ** 2 + 2 * b * x + c
+
+
+# This function returns a riemann sum as an approximation of an integral
+def Riemann(kappa, sigma, t, T, a, b, c, d):
+    value = 0
+    tau = T - t
+    for i in range(100):
+        variable = tau/100 * i
+        value += theta(kappa, sigma, variable, a, b, c, d) * B(kappa, variable) * (tau/100)
+    return value
+
+
+# This function returns an integral approximation using monte carlo simulation
+def Monte_Carlo(kappa, sigma, t, T, a, b, c, d):
+    value = 0
+    for i in range(10000):
+        draw = np.random.uniform(0, T - t)
+        value += theta(kappa, sigma, draw, a, b, c, d) * B(kappa, draw) * ((T - t)/10000)
+    return value

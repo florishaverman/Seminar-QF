@@ -1,49 +1,54 @@
+import math
+import pickle
+
+import numpy as np
+
 from prepayment import loadINGData, probPrepayment
 from interestRate import simulationHullWhite
-from Objective_Function_Methods import Altered_Cashflows, Total_Altered_Cashflows
 import HullWhiteMethods as hw
-import pickle  # To save logistic model, to avoid training each time.
+from Objective_Function_Methods import Altered_Cashflows
+import matplotlib.pyplot as plt
 
 # Mortgage information
 data = loadINGData('Current Mortgage portfolio')
-data.drop(['Variable'], inplace=True, axis=1)
-data.drop([3], inplace=True)
-data.iloc[1] = data.iloc[1] * 12
-margin = data.iloc[3, 1]
-notional = data.iloc[0].tolist()
-FIRP = data.iloc[1].tolist()  # In months
-coupon_rate = data.iloc[2].tolist()
+data = data.drop('Variable', axis=1)
+data.loc[1] = data.loc[1] * 12  # In months
+margin = data.loc[4, 1]
+notional = data.loc[0].tolist()
+FIRP = data.loc[1].tolist()  # In months
+coupon_rate = data.loc[2].tolist()
 
 # Forward curve parameters used in theta
 current_euribor = loadINGData('Current Euribor Swap Rates')
 current_euribor = current_euribor.loc[:, 'Swap rate']
 popt = hw.curve_parameters(current_euribor)
 
+x = np.linspace(1, 20, 20)
+plt.plot(hw.func(x, *popt))
 # Parameters as input for Hull-White
 # Obtained from swaption data
 alpha = 1.5  # = kappa
-sigma = 0.2633
+sigma = 0.2663
 r_zero = current_euribor[0]
-n_steps = 100
+delta = 100
 T = 120
 
-# Simulate cashflows large number of times
-R = 1
 prepayment_model = pickle.load(open('prepayment_model.sav', 'rb'))
-# Store all simulated cashflows
-prepay_rate = [[] for _ in range(6)]
+R = 1
+sim_cashflows = []
 for r in range(R):
     # Here we obtain a list of simulated interest rates under Hull-White
     # should theta vary over time?
-    interest_rates = simulationHullWhite(alpha, sigma, popt, r_zero, n_steps, T)
+    interest_rates = simulationHullWhite(alpha, sigma, popt, r_zero, delta, T)
     tenor = T
+    prepay_rate = [[] for _ in range(6)]
     while tenor > 0:
         # Determine the swap rates up to last tenor by approximating bond prices
         bond_price, swap_rates = [], []
         sum_bond_price = 0
         step_length_swap = 1 / 12
         for t in range(tenor):
-            bp = hw.bondPrice(4, alpha, 1, sigma, interest_rates[T - tenor], *popt)
+            bp = hw.bondPrice(2, alpha, 1, sigma, interest_rates[T - tenor], *popt)
             bond_price.append(bp)
             sum_bond_price += bp
             sr = (1 - bp) / (step_length_swap * sum_bond_price)
@@ -55,16 +60,21 @@ for r in range(R):
                 ref_rate = swap_rates[FIRP[i] - 1] + margin
                 incentive = coupon_rate[i] - ref_rate
                 prepay_rate_mortgage = probPrepayment(prepayment_model, incentive)
-                prepay_rate[i].append(prepay_rate_mortgage[0])
+                prepay_rate[i].append(prepay_rate_mortgage)
         # Update FIRP and tenor
         FIRP[:] = [f - 1 for f in FIRP]
         tenor -= 1
 
-# Generate simulated cashflows based on prepayment rate
-for i in range(120):
-    for j in range(6):
-        if len(prepay_rate[j]) < i + 1:
-            prepay_rate[j].append(0)
-sc = Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
-simulated_cashflows = Total_Altered_Cashflows(sc)
-print(simulated_cashflows)
+    # Generate simulated cashflows based on prepayment rate
+    sc = Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
+    sim_cashflows.append(sc)
+
+print(hw.integral(10, alpha, 0, sigma, *popt))
+print(hw.B(alpha, 10-0))
+print(hw.func_deriv(10, *popt))
+print(3*popt[0]*100 + 2*popt[1]*10 + popt[2])
+print(hw.func(10, *popt))
+print(popt[0]*10**3 + popt[1]*10**2 + popt[2]*10 + popt[3])
+print(hw.theta(alpha, sigma, 10, *popt))
+print(1/1.5 * hw.func_deriv(10, *popt) + hw.func(10, *popt) + sigma**2/(2*alpha**2)*(1-math.exp((-2*alpha*10))))
+print(hw.A(10, alpha, 0, sigma, *popt))
