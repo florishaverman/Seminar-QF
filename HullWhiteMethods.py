@@ -78,7 +78,7 @@ def Riemann(kappa, sigma, t, T, a, b, c, d):
     tau = T - t
     for i in range(100):
         variable = tau/100 * i
-        value += theta(kappa, sigma, variable, a, b, c, d) * B(kappa, variable) * (tau/10000)
+        value += theta(kappa, sigma, variable, a, b, c, d) * B(kappa, variable) * (tau/100)
     return value
 
 
