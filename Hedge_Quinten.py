@@ -5,9 +5,16 @@ import HullWhiteMethods as hw
 import pickle  # To save logistic model, to avoid training each time.
 import hedging
 from scipy.optimize import minimize
+from time import process_time
 
 
 # Ik heb het cashflow_generator script even in een functie gezet om het makkelijker te maken qua gebruik
+# Het doet precies wat het cashflow_generator script doet maar dan voor maar één iteratie.
+# Input: data = mortgage portfolio data in mijn vorm (alleen notional, FIRP, coupon en margin, een 4x6 dataframe),
+# current euribor = the sequence uit de current euribor sheet, prepayment model = al ingelaadde model van Floris, 
+# (alpha, sigma) = hull-white parameters, n_steps = het aantal stappen dat in een maand wordt gesimuleerd via hull-white,
+# T = de maximale FIRP. 
+# Output: Een lijst met 120 cashflows, 1 voor elke maand.
 def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T):
     margin = data.iloc[3, 1]
     FIRP = data.iloc[1].tolist()  # In months
@@ -17,7 +24,6 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
     prepay_rate = [[] for _ in range(6)]
 
     # Here we obtain a list of simulated interest rates under Hull-White
-    # should theta vary over time?
     interest_rates = simulationHullWhite(alpha, sigma, popt, current_euribor[0], n_steps, T)
     tenor = T
     while tenor > 0:
@@ -54,6 +60,8 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
 
 # Ik heb even een aparte functie gemaakt om generate_cashflows te loopen, omdat dat even wat overzichtelijker was
 # voor mezelf qua het cashflow generator script omschrijven tot een functie.
+# Input: R = Aantal cashflow simulaties. Voor de rest zie generate_cashflows.
+# Output: Een lijst van R lijsten met cashflows. Elke lijst met cashflows beslaat één simulatie.
 def generate_multiple_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T, R):
     sim_cashflow_array = [[] for _ in range(R)]
     for i in range(R):
@@ -61,7 +69,12 @@ def generate_multiple_cashflows(data, current_euribor, prepayment_model, alpha, 
     return sim_cashflow_array
 
 
-# A function to calculate the objective function for margin stability using just zero coupon bonds
+# A function to calculate the objective function for margin stability using just zero coupon bonds. This function is used for the objective function
+# where we minimize the average MSE of multiple simulations. The minimization problem can be simplified by computing minimizing it per month,
+# so by creating 120 smaller optimization problems. This function thus computes the average MSE for a single month over multiple simulations.
+# Input: hedge_cashflow = the cashflow in this month resulting from the hedgin portfolio, required_cashflow = the cashflow that would take place this 
+# month if no prepayment would ever take place, sim_cashflows = the cashflows that take place in this month in the different simulations.
+# Output: The computed MSE
 def zcb_margin_objective(hedge_cashflow, required_cashflow, sim_cashflows):
     MSE = 0
     for i in range(len(sim_cashflows)):
@@ -69,28 +82,46 @@ def zcb_margin_objective(hedge_cashflow, required_cashflow, sim_cashflows):
     return MSE
 
 
+# This function minimizes the average MSE over R different simulations for all 120 months using just zero coupon bonds with the assumption we have bonds for every maturity.
+# Input: desired_cashflows = a list of all 120 cash_flows as they would occur if no prepayment took place, 
+# simulated_cashflows = a list of R lists, which all contain the 120 cashflows resulting from a single simulation.
+# Output: A list of bond positions for all 120 maturities, that optimizes the hedge.
 def zcb_margin_optimization(desired_cashflows, simulated_cashflows):
-    print('Starting optimization')
+    t1 = process_time()
     result = []
+    # For every time t create the correct input for monthly optimization
     for t in range(len(desired_cashflows)):
         required_cashflow = desired_cashflows[t]
         sim_cashflows = []
+        # For every month we loop over evry simulation to get the corresponding cahsflow for that month
         for i in range(len(simulated_cashflows)):
             sim_cashflows.append(simulated_cashflows[i][t])
         x0 = 10000
+        # Minimize the objective function
         opt_monthly_bonds = minimize(zcb_margin_objective, x0, args=(required_cashflow, sim_cashflows))
+        # Store the results
         result.append(opt_monthly_bonds.x[0])
-    print('Finished Optimization')
+    t2 = process_time()
+    # Time the process and show its duration
+    print('optimization took ', t2-t1, ' seconds in total')
     return result
 
 
+# This function computes the optimal hedge portfolio consisting of only zero coupon bond for Floris' method, which results in creating bond positions
+# equal to the average deviation from the simulations in comparison to the desired cashflows.
+# Input and output: See zcp_margin_optimization.
 def zcp_mean_margin_optimization(desired_cashflows, simulated_cashflows):
     result = []
+    t1 = process_time()
+    # optimize the hedge for every month
     for t in range(len(desired_cashflows)):
         required_cashflow = desired_cashflows[t]
         value = 0
+        # comput the average deviation from the desired cashflow
         for i in range(len(simulated_cashflows)):
             value += required_cashflow - simulated_cashflows[i][t]
         value = value/len(simulated_cashflows)
         result.append(value)
+    t2 = process_time()
+    print('optimization took ', t2-t1, ' seconds in total')
     return result
