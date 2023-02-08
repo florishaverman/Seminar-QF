@@ -1,6 +1,6 @@
 from prepayment import loadINGData, probPrepayment
 from interestRate import simulationHullWhite
-from Objective_Function_Methods import Altered_Cashflows, Total_Altered_Cashflows
+import Objective_Function_Methods as ofm
 import HullWhiteMethods as hw
 import pickle  # To save logistic model, to avoid training each time.
 import hedging
@@ -53,9 +53,9 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
         for j in range(6):
             if len(prepay_rate[j]) < i + 1:
                 prepay_rate[j].append(0)
-    sc = Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
-    simulated_cashflows = Total_Altered_Cashflows(sc)
-    return simulated_cashflows
+    sc = ofm.Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
+    simulated_cashflows = ofm.Total_Altered_Cashflows(sc)
+    return simulated_cashflows, interest_rates
 
 
 # Ik heb even een aparte functie gemaakt om generate_cashflows te loopen, omdat dat even wat overzichtelijker was
@@ -64,9 +64,10 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
 # Output: Een lijst van R lijsten met cashflows. Elke lijst met cashflows beslaat één simulatie.
 def generate_multiple_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T, R):
     sim_cashflow_array = [[] for _ in range(R)]
+    sim_interest_rate_array = [[] for _ in range(R)]
     for i in range(R):
-        sim_cashflow_array[i] = generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T)
-    return sim_cashflow_array
+        sim_cashflow_array[i], sim_interest_rate_array[i] = generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T)
+    return sim_cashflow_array, sim_interest_rate_array
 
 
 # A function to calculate the objective function for margin stability using just zero coupon bonds. This function is used for the objective function
@@ -93,7 +94,7 @@ def zcb_margin_optimization(desired_cashflows, simulated_cashflows):
     for t in range(len(desired_cashflows)):
         required_cashflow = desired_cashflows[t]
         sim_cashflows = []
-        # For every month we loop over evry simulation to get the corresponding cahsflow for that month
+        # For every month we loop over every simulation to get the corresponding cahsflow for that month
         for i in range(len(simulated_cashflows)):
             sim_cashflows.append(simulated_cashflows[i][t])
         x0 = 10000
@@ -110,7 +111,7 @@ def zcb_margin_optimization(desired_cashflows, simulated_cashflows):
 # This function computes the optimal hedge portfolio consisting of only zero coupon bond for Floris' method, which results in creating bond positions
 # equal to the average deviation from the simulations in comparison to the desired cashflows.
 # Input and output: See zcp_margin_optimization.
-def zcp_mean_margin_optimization(desired_cashflows, simulated_cashflows):
+def zcb_mean_margin_optimization(desired_cashflows, simulated_cashflows):
     result = []
     t1 = process_time()
     # optimize the hedge for every month
@@ -125,3 +126,65 @@ def zcp_mean_margin_optimization(desired_cashflows, simulated_cashflows):
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return result
+
+
+# This function computes the value MSE for a given hedge portfolio consisting of only zcb.
+# Input: positions = zcb positions of the hedgin portfolio, desired_values = the npv's we try to achieve,
+# simulated_values = the npv's resulting from the simulated interest rates and prepayment rates for al R simulations,
+# simulated_interest_rates = the simulated interest rates for all R simulations.
+# Ouptput: The computed MSE
+def zcb_value_objective(positions, desired_values, simulated_values, simulated_interest_rates):
+    T = len(desired_values)
+    R = len(simulated_interest_rates)
+    hedge_values = []
+    # Compute the hedge portfolio npv's under the different simulations
+    for r in range(R):
+        values = ofm.zcb_total_value(positions, simulated_interest_rates[r])
+        hedge_values.append(values)
+    MSE = 0
+    # Compute the MSE
+    for r in range(R):
+        for t in range(T):
+            MSE += 1/(R*T)*((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
+    return MSE
+
+
+# This function optimizes a zcb hedge portfolio for margin stability.
+# Input: See zcb_value_objective. Output: The optimal hedge portfolio for value stability.
+def zcb_value_optimization(desired_values, simulated_interest_rates, simulated_cashflows):
+    t1 = process_time()
+    R = len(simulated_interest_rates)
+    simulated_values = []
+    for r in range(R):
+        sim_val = ofm.Altered_Value(simulated_cashflows[r], simulated_interest_rates[r])
+        simulated_values.append(sim_val)
+    x0 = [10000 for t in range(120)]
+    opt_monthly_bonds = minimize(zcb_value_objective, x0, args=(desired_values, simulated_values, simulated_interest_rates))
+    t2 = process_time()
+    print('optimization took ', t2-t1, ' seconds in total')
+    return opt_monthly_bonds.x
+
+
+# This function computes the elsastic net type objective function for a hedge consisting og just zcb.
+# Input: positions = the zcb positions in the hedge, desired_cashflows = the cashflows we want to achieve,
+# simulated_cashflows = the simulated cashflows of all R simulations, desired_values = the npv's we want to achieve,
+# simulated_values = the npv's of the mortgage portfolios under all R simulations, simulated_interest_rates = the simulated interest
+# rates for all R simulations, alpha = the alpha in the elastic net objective function.
+# Output: The MSE resulting from a given hedge portfolio for the elastic net objective function.
+def elastic_zcb_objective(positions, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_interest_rates, alpha):
+    MSE_value = zcb_value_objective(positions, desired_values, simulated_values, simulated_interest_rates)
+    R = len(simulated_interest_rates)
+    T = len(desired_cashflows)
+    MSE_margin = 0
+    for t in range(T):
+        required_cashflow = desired_cashflows[t]
+        sim_cashflows = []
+        for r in range(R):
+            sim_cashflows.append(simulated_cashflows[r][t])
+        MSE_margin += zcb_margin_objective(positions, required_cashflow, sim_cashflows)
+    MSE_elastic = alpha * MSE_value + (1 - alpha) * MSE_margin
+    return MSE_elastic
+
+
+def elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_interest_rates, alpha):
+    print('Hi')

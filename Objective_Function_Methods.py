@@ -107,20 +107,26 @@ def Total_Altered_Cashflows(cash_flows):
 
 
 # This function caculates the value of the portfolio when prepayment is involved
-def Altered_Value(cash_flows, portfolio, interest_rates):
+def Altered_Value(cash_flows, interest_rates):
     total_value = []
-    for i in range(6):
-        value = []
-        for j in range(120):
-            addition = 0
-            if portfolio.iloc[1][i] >= 120 - j:
-                addition += cash_flows[i][120 - j - 1] / (1 + ((interest_rates[120 - j - 1] + 0.015) / 12))
-            if j > 0:
-                addition += value[j - 1] / (1 + ((interest_rates[120 - j - 1] + 0.015) / 12))
-            value.append(addition)
-        if i == 0:
-            total_value = value
-        if i > 0:
-            total_value = [sum(x) for x in zip(total_value, value)]
+    for j in range(120):
+        addition = cash_flows[120 - j - 1] / (1 + ((interest_rates[120 - j - 1] + 0.015) / 12))
+        if j > 0:
+            addition += total_value[j - 1] / (1 + ((interest_rates[120 - j - 1] + 0.015) / 12))
+        total_value.append(addition)
     total_value.reverse()
     return total_value
+
+
+# This function returns all npv for a zcb hedge portfolio for a given simulation
+# Input: positions = zcb positions in the hedge portfolios for all 120 maturities, interest_rates = simulated interest_rates.
+def zcb_total_value(positions, interest_rates):
+    T = len(interest_rates)
+    values = []
+    for t in range(T):
+        value = positions[120 - t - 1]/(1 + (interest_rates[120 - t -1]/12))
+        if t > 0:
+            value += values[t - 1]/(1 + (interest_rates[120 - t -1]/12))
+        values.append(value)
+    values.reverse()
+    return values

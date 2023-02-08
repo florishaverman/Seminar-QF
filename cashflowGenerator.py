@@ -21,7 +21,7 @@ popt = hw.curve_parameters(current_euribor)
 
 # Parameters as input for Hull-White
 # Obtained from swaption data
-alpha = 1.5  # = kappa
+alpha = 0.1  # = kappa
 sigma = 0.2633
 r_zero = current_euribor[0]
 n_steps = 100
