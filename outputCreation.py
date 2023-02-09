@@ -9,7 +9,7 @@ Input:  name_file -> name of the output file
         desired -> 1D-array with the desired cashflows
         simulated -> XD-array with X simulated cashflow runs
 '''
-def writeCashflows(name_file, desired, simulated):
+def writeCashflows(name_file, desired, simulated, interest_rates):
     wb = xlsxwriter.Workbook(name_file + '.xlsx')
     # First write the desired cashflows
     ws = wb.add_worksheet('Desired CF')
@@ -28,6 +28,16 @@ def writeCashflows(name_file, desired, simulated):
     count_col = 1
     for sim in simulated:
         ws.write_column(1, count_col, sim)
+        count_col += 1
+
+    ws = wb.add_worksheet('Simulated Interest Rates')
+    runs = [i+1 for i in range(len(interest_rates))]
+    ws.write('A1', 'Months/Runs')
+    ws.write_row('B1', runs)
+    ws.write_column('A2', months)
+    count_col = 1
+    for rate in interest_rates:
+        ws.write_column(1, count_col, rate)
         count_col += 1
     wb.close()
 

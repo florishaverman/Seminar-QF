@@ -183,7 +183,7 @@ def elastic_zcb_objective(positions, desired_cashflows, simulated_cashflows, des
         for r in range(R):
             sim_cashflows.append(simulated_cashflows[r][t])
         MSE_margin += zcb_margin_objective(positions[t], required_cashflow, sim_cashflows)
-    MSE_elastic = alpha * MSE_value + (1 - alpha) * MSE_margin
+    MSE_elastic = alpha * MSE_margin + (1 - alpha) * MSE_value
     return MSE_elastic
 
 
