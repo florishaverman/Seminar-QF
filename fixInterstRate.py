@@ -27,7 +27,6 @@ for i in range(100):
     sim.append(interest_rates)
 for i in sim:
     for j in i:
-        if j > 0.1:
-            print(j)
+        print(j)
 
 

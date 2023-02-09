@@ -73,7 +73,7 @@ def generate_multiple_cashflows(data, current_euribor, prepayment_model, alpha, 
 # A function to calculate the objective function for margin stability using just zero coupon bonds. This function is used for the objective function
 # where we minimize the average MSE of multiple simulations. The minimization problem can be simplified by computing minimizing it per month,
 # so by creating 120 smaller optimization problems. This function thus computes the average MSE for a single month over multiple simulations.
-# Input: hedge_cashflow = the cashflow in this month resulting from the hedgin portfolio, required_cashflow = the cashflow that would take place this 
+# Input: hedge_cashflow = the cashflow in this month resulting from the hedging portfolio, required_cashflow = the cashflow that would take place this 
 # month if no prepayment would ever take place, sim_cashflows = the cashflows that take place in this month in the different simulations.
 # Output: The computed MSE
 def zcb_margin_objective(hedge_cashflow, required_cashflow, sim_cashflows):
@@ -141,12 +141,14 @@ def zcb_value_objective(positions, desired_values, simulated_values, simulated_i
     for r in range(R):
         values = ofm.zcb_total_value(positions, simulated_interest_rates[r])
         hedge_values.append(values)
-    MSE = 0
+    value_MSE = 0
     # Compute the MSE
     for r in range(R):
+        MSE = 0
         for t in range(T):
-            MSE += 1/(R*T)*((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
-    return MSE
+            MSE += ((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])/desired_values[t])**2
+        value_MSE += MSE/T
+    return value_MSE/R
 
 
 # This function optimizes a zcb hedge portfolio for margin stability.
@@ -181,10 +183,20 @@ def elastic_zcb_objective(positions, desired_cashflows, simulated_cashflows, des
         sim_cashflows = []
         for r in range(R):
             sim_cashflows.append(simulated_cashflows[r][t])
-        MSE_margin += zcb_margin_objective(positions, required_cashflow, sim_cashflows)
+        MSE_margin += zcb_margin_objective(positions[t], required_cashflow, sim_cashflows)
     MSE_elastic = alpha * MSE_value + (1 - alpha) * MSE_margin
     return MSE_elastic
 
 
-def elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_interest_rates, alpha):
-    print('Hi')
+def elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_interest_rates, alpha):
+    t1 = process_time()
+    R = len(simulated_interest_rates)
+    simulated_values = []
+    for r in range(R):
+        sim_val = ofm.Altered_Value(simulated_cashflows[r], simulated_interest_rates[r])
+        simulated_values.append(sim_val)
+    x0 = [10000 for i in range(120)]
+    opt_monthly_bonds = minimize(elastic_zcb_objective, x0, args=(desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_interest_rates, alpha))
+    t2 = process_time()
+    print('optimization took ', t2-t1, ' seconds in total')
+    return opt_monthly_bonds.x
