@@ -78,9 +78,10 @@ def generate_multiple_cashflows(data, current_euribor, prepayment_model, alpha, 
 # Output: The computed MSE
 def zcb_margin_objective(hedge_cashflow, required_cashflow, sim_cashflows):
     MSE = 0
-    for i in range(len(sim_cashflows)):
-        MSE += ((required_cashflow - sim_cashflows[i] - hedge_cashflow)/required_cashflow)**2
-    return MSE
+    R = len(sim_cashflows)
+    for i in range(R):
+        MSE += (required_cashflow - sim_cashflows[i] - hedge_cashflow)**2
+    return MSE/R
 
 
 # This function minimizes the average MSE over R different simulations for all 120 months using just zero coupon bonds with the assumption we have bonds for every maturity.
@@ -144,11 +145,9 @@ def zcb_value_objective(positions, desired_values, simulated_values, simulated_i
     value_MSE = 0
     # Compute the MSE
     for r in range(R):
-        MSE = 0
         for t in range(T):
-            MSE += ((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])/desired_values[t])**2
-        value_MSE += MSE/T
-    return value_MSE/R
+            value_MSE += (1/(R*T))*((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
+    return value_MSE
 
 
 # This function optimizes a zcb hedge portfolio for margin stability.

@@ -22,7 +22,7 @@ desired_cashflows = ofm.Compute_Cash_Flows(data)
 #difference = [optimal_x[i]-optimal_x2[i] for i in range(len(optimal_x))]
 #print(difference)
 desired_values = ofm.Compute_Time_Values(data)
-optimal_x = hq.elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_interest_rates, 1)
+optimal_x = hq.elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_interest_rates, 0.5)
 #optimal_x = hq.zcb_value_optimization(desired_values, simulated_interest_rates, simulated_cashflows)
 print(optimal_x)
 #test = ofm.zcb_total_value(optimal_x, simulated_interest_rates[0])
