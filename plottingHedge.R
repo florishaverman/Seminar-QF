@@ -7,7 +7,7 @@ library(xlsx)
 path = "/Users/anneduivenvoorden/Documents/Msc Quantitative Finance/Seminar Financial Case Studies/Seminar-QF/Data"
 desired_cf = read_excel(paste(path, "/SimulatedCFnRates.xlsx", sep = ""), sheet = 'Desired CF')
 sim_cf = read_excel(paste(path, "/SimulatedCFnRates.xlsx", sep = ""), sheet = 'Simulated CF')
-hedge = read_excel(paste(path, "/zcb mean margin hedge.xlsx", sep = ""), sheet = 1)
+hedge = read_excel(paste(path, "/zcb elastic 0.9 hedge.xlsx", sep = ""), sheet = 1)
 
 desired_cf = desired_cf[,2]
 sim_cf = sim_cf[,2:101]
@@ -37,6 +37,8 @@ for(i in 1:100){
 lines(m, desired_cf, type = 'l', col = 'black', lwd = 1)
 # plot hedge
 lines(m, hedge, type = 'l', col = 'darkgreen', lwd = 2)
+legend("topright", legend = c("Cash flow w/o prepayments", "Cash flow of hedge", "Simulated cash flows"),
+       col = c("black", "darkgreen", "azure3"), lty=1:2, cex = 0.8)
 
 # zoomed in plot
 plot(NULL, xlim=c(0,120), ylim=c(-30000,42000), yaxt="n", ylab="Cash flow", 
@@ -57,3 +59,6 @@ for(i in 1:100){
 lines(m, desired_cf, type = 'l', col = 'black', lwd = 1)
 # plot hedge
 lines(m, hedge, type = 'l', col = 'darkgreen', lwd = 2)
+legend("bottomright", legend = c("Cash flow w/o prepayments", "Cash flow of hedge", "Simulated cash flows"),
+       col = c("black", "darkgreen", "azure3"), lty=1:2, cex = 0.8)
+
