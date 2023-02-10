@@ -7,7 +7,7 @@ library(xlsx)
 path = "/Users/anneduivenvoorden/Documents/Msc Quantitative Finance/Seminar Financial Case Studies/Seminar-QF/Data"
 desired_cf = read_excel(paste(path, "/SimulatedCFnRates.xlsx", sep = ""), sheet = 'Desired CF')
 sim_cf = read_excel(paste(path, "/SimulatedCFnRates.xlsx", sep = ""), sheet = 'Simulated CF')
-hedge = read_excel(paste(path, "/zcb margin hedge.xlsx", sep = ""), sheet = 1)
+hedge = read_excel(paste(path, "/zcb mean margin hedge.xlsx", sep = ""), sheet = 1)
 
 desired_cf = desired_cf[,2]
 sim_cf = sim_cf[,2:101]
@@ -34,7 +34,26 @@ for(i in 1:100){
   points(m, curr_sim, pch = 5, col = 'azure3', asp = 1)
 }
 # plot desired CF
-lines(m, desired_cf, type = 'l', col = 'black')
+lines(m, desired_cf, type = 'l', col = 'black', lwd = 1)
 # plot hedge
-lines(m, hedge, type = 'l', col = 'darkgreen')
+lines(m, hedge, type = 'l', col = 'darkgreen', lwd = 2)
 
+# zoomed in plot
+plot(NULL, xlim=c(0,120), ylim=c(-30000,42000), yaxt="n", ylab="Cash flow", 
+     xaxt="n", xlab="Month")
+# fix axis
+axis(side = 2, at = c(-20000,-10000, 0, 10000, 20000, 30000, 40000))
+xax = rep(1, 60)
+for(i in 1:60){
+  xax[i] = i*2
+}
+axis(side = 1, at = xax)
+# plot simulated CF
+for(i in 1:100){
+  curr_sim = as.numeric(unlist(sim_cf[,i]))
+  points(m, curr_sim, pch = 5, col = 'azure3', asp = 1)
+}
+# plot desired CF
+lines(m, desired_cf, type = 'l', col = 'black', lwd = 1)
+# plot hedge
+lines(m, hedge, type = 'l', col = 'darkgreen', lwd = 2)
