@@ -25,6 +25,18 @@ def Compute_Cash_Flows(mortgageData):
     return cash_flows
 
 
+def Compute_Cashflows_Exclusive_Edition(mortgageData):
+    max_len = max(mortgageData.iloc[1])
+    cash_flows = []
+    for i in range(max_len):
+        addition = 0
+        for j in range(6):
+            if mortgageData.iloc[1, j] >= i + 1:
+                addition += 0.015 / 12 * mortgageData.iloc[0, j]
+        cash_flows.append(addition)
+    return cash_flows
+
+
 # This method computes for the next 120 months (The longest loan has an FIRP of 10 years) the net present value
 # of the mortgage portfolio at that time
 def Compute_Time_Values(mortgageData):

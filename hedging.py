@@ -63,3 +63,51 @@ def getCashflowMatrix(bonds, T):
 #     print(bonds[i].getCashflows())
 
 # print(getCashflowMatrix(bonds, m))
+
+
+class Swaption:
+    # The swaption is characterized by the time of inception t1, maturity t2 and the fixed leg rate (the strike). The floating leg is just the interest rate.
+    def __init__(self, t1, t2, strike, position):
+        self.t1 = t1
+        self.t2 = t2
+        self.strike = strike
+
+    def get_t1(self):
+        return self.t1
+
+    def get_t2(self):
+        return self.t2
+
+    def get_strike(self):
+        self.strike
+    
+
+    # This function computes the cashflows for a swaption as they would happen for a given simulation if the swaption was exercised.
+    # Input: self = a swaption object, interest_rates = one interest rate simulation.
+    # Output: cashflows for the swaption in case of exercise
+    def swaption_cashflows(self, interest_rates):
+        t1 = self.t1
+        t2 = self.t2
+        strike = self.strike
+        cashflows = []
+        for i in range(120):
+            if t1 > i or t2 < i:
+                cashflows.append(0)
+            else:
+                cashflows.append(interest_rates[i] - strike)
+        return cashflows
+
+
+    # This function computes the npv for every t of a given interest rate simulation for the cashflows resulting from exercising a swaption
+    # Input: self = a swaption object, interest_rates = one sequence of simulated interest rates.
+    # Ouput: The computed npv's
+    def swaption_value(self, interest_rates):
+        cashflows = Swaption.swaption_cashflows(self, interest_rates)
+        values = []
+        for t in range(120):
+            value = cashflows[120 - t - 1]/(1 + (interest_rates[120 - t -1]/12))
+            if t > 0:
+                value += values[t - 1]/(1 + (interest_rates[120 - t -1]/12))
+            values.append(value)
+        values.reverse()
+        return values

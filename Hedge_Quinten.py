@@ -3,7 +3,7 @@ from interestRate import simulationHullWhite
 import Objective_Function_Methods as ofm
 import HullWhiteMethods as hw
 import pickle  # To save logistic model, to avoid training each time.
-import hedging
+import hedging as h
 from scipy.optimize import minimize
 from time import process_time
 
@@ -159,7 +159,7 @@ def zcb_value_optimization(desired_values, simulated_interest_rates, simulated_c
     for r in range(R):
         sim_val = ofm.Altered_Value(simulated_cashflows[r], simulated_interest_rates[r])
         simulated_values.append(sim_val)
-    x0 = [10000 for t in range(120)]
+    x0 = [10000 for _ in range(120)]
     opt_monthly_bonds = minimize(zcb_value_objective, x0, args=(desired_values, simulated_values, simulated_interest_rates))
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
@@ -187,6 +187,7 @@ def elastic_zcb_objective(positions, desired_cashflows, simulated_cashflows, des
     return MSE_elastic
 
 
+# This function optimizes the elastic net objective function for solely zcb for a chosen alpha.
 def elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_interest_rates, alpha):
     t1 = process_time()
     R = len(simulated_interest_rates)
@@ -194,8 +195,96 @@ def elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_val
     for r in range(R):
         sim_val = ofm.Altered_Value(simulated_cashflows[r], simulated_interest_rates[r])
         simulated_values.append(sim_val)
-    x0 = [10000 for i in range(120)]
+    x0 = [10000 for _ in range(120)]
     opt_monthly_bonds = minimize(elastic_zcb_objective, x0, args=(desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_interest_rates, alpha))
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return opt_monthly_bonds.x
+
+
+# A function that calculates the margin stability MSE for a hedge of swaptions.
+# Input: deviating_cashflows = the not yet hedged difference between achieved cashflows and desired cashflows,
+# interest_rates = a list of R sequences of simulated interest_rates, swaptions = a list of swaption objects (all have notional 1),
+# positions = the position taken in the swaption. (has to be >= 0)
+# Output: The computed MSE
+def swaption_margin_objective(positions, deviating_cashflows, interest_rates, swaptions):
+    value = 0
+    s = len(swaption)
+    for sequence in interest_rates:
+        for swaption in range(s):
+            temp = 0
+            temp2 = 0
+            # Compute the cashflows per simulation per swaption if the swaption is exercised
+            possible_cashflows = h.Swaption.swaption_cashflows(swaptions[s], sequence)
+            for t in range(120):
+                # The MSE is computed both for the case where the swaption is excercised as well when it is not
+                temp += (deviating_cashflows[t] - positions[s]*possible_cashflows[t])**2
+                temp2 += deviating_cashflows[t]**2
+            # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
+            if temp <= temp2:
+                value += temp
+            else:
+                value += temp2
+    return value
+
+
+# This function optimizes a swaption hedge on margin stability for a given set of swaptions.
+# Input: deviating_cashflows = the yet to be hedged difference between desired and achieved cashflows,
+# interest_rates = a list of R sequences of simulated interest_rates, swaptions = a list of swaption objects (all have notional 1).
+# Output: The optimal positions for a margin stability hedge.
+def swaption_margin_optimization(deviating_cashflows, interest_rates, swaptions):
+    t1 = process_time()
+    s = len(swaptions)
+    x0 = [0 for _ in s]
+    opt_swaptions = minimize(swaption_margin_objective, x0, args=(deviating_cashflows, interest_rates, swaptions))
+    t2 = process_time()
+    print('optimization took ', t2-t1, ' seconds in total')
+    return opt_swaptions
+
+
+def swaption_value_objective(positions, deviating_cashflows, interest_rates, swaptions):
+    value = 0
+    s = len(swaption)
+    for sequence in interest_rates:
+        for swaption in range(s):
+            temp = 0
+            temp2 = 0
+            # Compute the cashflows per simulation per swaption if the swaption is exercised
+            possible_values = h.Swaption.swaption_value(swaptions[s], sequence)
+            for t in range(120):
+                # The MSE is computed both for the case where the swaption is excercised as well when it is not
+                temp += (deviating_cashflows[t] - positions[s]*possible_values[t])**2
+                temp2 += deviating_cashflows[t]**2
+            # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
+            if temp <= temp2:
+                value += temp
+            else:
+                value += temp2
+    return value
+
+
+def swaption_value_optimization(deviating_cashflows, interest_rates, swaptions):
+    t1 = process_time()
+    s = len(swaptions)
+    x0 = [0 for _ in s]
+    opt_swaptions = minimize(swaption_value_objective, x0, args=(deviating_cashflows, interest_rates, swaptions))
+    t2 = process_time()
+    print('optimization took ', t2-t1, ' seconds in total')
+    return opt_swaptions
+
+
+def swaption_elastic_objective(positions, deviating_cashflows, interest_rates, swaptions, alpha):
+    MSE_margin = swaption_margin_objective(positions, deviating_cashflows, interest_rates)
+    MSE_value = swaption_value_objective(positions, deviating_cashflows, interest_rates, swaptions)
+    MSE_elastic = alpha * MSE_margin + (1 - alpha) * MSE_value
+    return MSE_elastic
+
+
+def swaption_elastic_optimization(deviating_cashflows, interest_rates, swaptions, alpha):
+    t1 = process_time()
+    s = len(swaptions)
+    x0 = [0 for _ in s]
+    opt_swaptions = minimize(swaption_elastic_objective, x0, args=(deviating_cashflows, interest_rates, swaptions, alpha))
+    t2 = process_time()
+    print('optimization took ', t2-t1, ' seconds in total')
+    return opt_swaptions
