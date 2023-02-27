@@ -6,6 +6,7 @@ import pickle  # To save logistic model, to avoid training each time.
 import hedging as h
 from scipy.optimize import minimize
 from time import process_time
+from numpy import absolute
 
 
 # Ik heb het cashflow_generator script even in een functie gezet om het makkelijker te maken qua gebruik
@@ -146,7 +147,7 @@ def zcb_value_objective(positions, desired_values, simulated_values, simulated_i
     # Compute the MSE
     for r in range(R):
         for t in range(T):
-            value_MSE += (1/(R*T))*((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
+            value_MSE += (0.05767551326622137 / (R * T) ) * ( (desired_values[t] - simulated_values[r][t] - hedge_values[r][t]) **2)
     return value_MSE
 
 
@@ -209,17 +210,16 @@ def elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_val
 # Output: The computed MSE
 def swaption_margin_objective(positions, deviating_cashflows, interest_rates, swaptions):
     value = 0
-    s = len(swaption)
-    for sequence in interest_rates:
-        for swaption in range(s):
+    for i in range(len(interest_rates)):
+        for j in range(len(swaptions)):
             temp = 0
             temp2 = 0
             # Compute the cashflows per simulation per swaption if the swaption is exercised
-            possible_cashflows = h.Swaption.swaption_cashflows(swaptions[s], sequence)
+            possible_cashflows = h.Swaption.swaption_cashflows(swaptions[j], interest_rates[i])
             for t in range(120):
                 # The MSE is computed both for the case where the swaption is excercised as well when it is not
-                temp += (deviating_cashflows[t] - positions[s]*possible_cashflows[t])**2
-                temp2 += deviating_cashflows[t]**2
+                temp += (deviating_cashflows[i][t] - positions[j]*possible_cashflows[t])**2
+                temp2 += deviating_cashflows[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if temp <= temp2:
                 value += temp
@@ -232,29 +232,30 @@ def swaption_margin_objective(positions, deviating_cashflows, interest_rates, sw
 # Input: deviating_cashflows = the yet to be hedged difference between desired and achieved cashflows,
 # interest_rates = a list of R sequences of simulated interest_rates, swaptions = a list of swaption objects (all have notional 1).
 # Output: The optimal positions for a margin stability hedge.
-def swaption_margin_optimization(deviating_cashflows, interest_rates, swaptions):
+def swaption_margin_optimization(deviating_cashflows, interest_rates, swaptions, optimal_x):
     t1 = process_time()
-    s = len(swaptions)
-    x0 = [0 for _ in s]
-    opt_swaptions = minimize(swaption_margin_objective, x0, args=(deviating_cashflows, interest_rates, swaptions))
+    limit = sum(absolute(optimal_x))
+    limit = (0.05/0.95)*limit
+    cons = ({'type': 'ineq', 'fun': lambda x:  limit - sum(absolute(x))})
+    x0 = [0 for _ in range(len(swaptions))]
+    opt_swaptions = minimize(swaption_margin_objective, x0, args=(deviating_cashflows, interest_rates, swaptions), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
-    return opt_swaptions
+    return opt_swaptions.x
 
 
 def swaption_value_objective(positions, deviating_cashflows, interest_rates, swaptions):
     value = 0
-    s = len(swaption)
-    for sequence in interest_rates:
-        for swaption in range(s):
+    for i in range(len(interest_rates)):
+        for s in range(len(swaptions)):
             temp = 0
             temp2 = 0
             # Compute the cashflows per simulation per swaption if the swaption is exercised
-            possible_values = h.Swaption.swaption_value(swaptions[s], sequence)
+            possible_values = h.Swaption.swaption_value(swaptions[s], interest_rates[i])
             for t in range(120):
                 # The MSE is computed both for the case where the swaption is excercised as well when it is not
-                temp += (deviating_cashflows[t] - positions[s]*possible_values[t])**2
-                temp2 += deviating_cashflows[t]**2
+                temp += (deviating_cashflows[i][t] - positions[s]*possible_values[t])**2
+                temp2 += deviating_cashflows[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if temp <= temp2:
                 value += temp
@@ -263,28 +264,52 @@ def swaption_value_objective(positions, deviating_cashflows, interest_rates, swa
     return value
 
 
-def swaption_value_optimization(deviating_cashflows, interest_rates, swaptions):
+def swaption_value_optimization(deviating_cashflows, interest_rates, swaptions, optimal_x):
     t1 = process_time()
+    limit = sum(absolute(optimal_x))
+    limit = (0.05/0.95)*limit
+    cons = ({'type': 'ineq', 'fun': lambda x:  limit - sum(absolute(x))})
     s = len(swaptions)
     x0 = [0 for _ in s]
-    opt_swaptions = minimize(swaption_value_objective, x0, args=(deviating_cashflows, interest_rates, swaptions))
+    opt_swaptions = minimize(swaption_value_objective, x0, args=(deviating_cashflows, interest_rates, swaptions), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return opt_swaptions
 
 
 def swaption_elastic_objective(positions, deviating_cashflows, interest_rates, swaptions, alpha):
-    MSE_margin = swaption_margin_objective(positions, deviating_cashflows, interest_rates)
-    MSE_value = swaption_value_objective(positions, deviating_cashflows, interest_rates, swaptions)
-    MSE_elastic = alpha * MSE_margin + (1 - alpha) * MSE_value
+    MSE_elastic = 0
+    for i in range(len(interest_rates)):
+        for j in range(len(swaptions)):
+            temp = 0
+            margin = 0
+            value = 0
+            # Compute the cashflows per simulation per swaption if the swaption is exercised
+            possible_cashflows = h.Swaption.swaption_cashflows(swaptions[j], interest_rates[i])
+            # Compute the cashflows per simulation per swaption if the swaption is exercised
+            possible_values = h.Swaption.swaption_value(swaptions[j], interest_rates[i])
+            for t in range(120):
+                # The MSE is computed both for the case where the swaption is excercised as well when it is not
+                margin += (deviating_cashflows[i][t] - positions[j]*possible_cashflows[t])**2
+                value += (deviating_cashflows[i][t] - positions[j]*possible_values[t])**2
+                temp += deviating_cashflows[i][t]**2
+            # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
+            if alpha * margin + (1 - alpha) * value < temp:
+                MSE_elastic += alpha * margin + (1 - alpha) * value
+            else:
+                MSE_elastic += temp
     return MSE_elastic
 
 
 def swaption_elastic_optimization(deviating_cashflows, interest_rates, swaptions, alpha):
     t1 = process_time()
+    t1 = process_time()
+    limit = sum(absolute(optimal_x))
+    limit = (0.05/0.95)*limit
+    cons = ({'type': 'ineq', 'fun': lambda x:  limit - sum(absolute(x))})
     s = len(swaptions)
     x0 = [0 for _ in s]
-    opt_swaptions = minimize(swaption_elastic_objective, x0, args=(deviating_cashflows, interest_rates, swaptions, alpha))
+    opt_swaptions = minimize(swaption_elastic_objective, x0, args=(deviating_cashflows, interest_rates, swaptions, alpha), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return opt_swaptions

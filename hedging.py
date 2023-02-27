@@ -67,7 +67,7 @@ def getCashflowMatrix(bonds, T):
 
 class Swaption:
     # The swaption is characterized by the time of inception t1, maturity t2 and the fixed leg rate (the strike). The floating leg is just the interest rate.
-    def __init__(self, t1, t2, strike, position):
+    def __init__(self, t1, t2, strike):
         self.t1 = t1
         self.t2 = t2
         self.strike = strike
@@ -91,7 +91,7 @@ class Swaption:
         strike = self.strike
         cashflows = []
         for i in range(120):
-            if t1 > i or t2 < i:
+            if t1 >= i or t2 < i:
                 cashflows.append(0)
             else:
                 cashflows.append(interest_rates[i] - strike)
@@ -111,3 +111,10 @@ class Swaption:
             values.append(value)
         values.reverse()
         return values
+
+    
+def create_swaptions(max_maturity, interest_rate):
+    swaptions = []
+    for i in range(max_maturity - 12):
+        swaptions.append(Swaption(i, i + 12, interest_rate))
+    return swaptions
