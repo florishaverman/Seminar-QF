@@ -79,7 +79,7 @@ class Swaption:
         return self.t2
 
     def get_strike(self):
-        self.strike
+        return self.strike
     
 
     # This function computes the cashflows for a swaption as they would happen for a given simulation if the swaption was exercised.

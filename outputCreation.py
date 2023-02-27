@@ -9,6 +9,8 @@ Input:  name_file -> name of the output file
         desired -> 1D-array with the desired cashflows
         simulated -> XD-array with X simulated cashflow runs
 '''
+
+
 def writeCashflows(name_file, desired, simulated, interest_rates):
     wb = xlsxwriter.Workbook(name_file + '.xlsx')
     # First write the desired cashflows
@@ -21,7 +23,7 @@ def writeCashflows(name_file, desired, simulated, interest_rates):
 
     # Now, write the simulated cashflows to a seperate sheet
     ws = wb.add_worksheet('Simulated CF')
-    runs = [i+1 for i in range(len(simulated))]
+    runs = [i + 1 for i in range(len(simulated))]
     ws.write('A1', 'Months/Runs')
     ws.write_row('B1', runs)
     ws.write_column('A2', months)
@@ -31,7 +33,7 @@ def writeCashflows(name_file, desired, simulated, interest_rates):
         count_col += 1
 
     ws = wb.add_worksheet('Simulated Interest Rates')
-    runs = [i+1 for i in range(len(interest_rates))]
+    runs = [i + 1 for i in range(len(interest_rates))]
     ws.write('A1', 'Months/Runs')
     ws.write_row('B1', runs)
     ws.write_column('A2', months)
@@ -60,16 +62,3 @@ def writeHedge(file_name, hedge, maturities, type_instr):
         ws.write_column(1, col_count+1, hedge[i])
         col_count += 2
     wb.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
