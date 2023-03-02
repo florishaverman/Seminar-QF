@@ -62,6 +62,17 @@ def Compute_Time_Values(mortgageData):
     return total_value
 
 
+def compute_desired_values_exclusive_edition(desired_cashflows):
+    total_value = []
+    for i in range(120):
+        addition = desired_cashflows[120 - i - 1] / (1 + 0.02829 / 12)
+        if i > 0:
+            addition += total_value[i - 1] / (1 + 0.02829 / 12)
+        total_value.append(addition)
+    total_value.reverse()
+    return total_value
+
+
 # This method computes the relative MSE (relative to the expected cash flows or value) with the expected and
 # predicted series as input.
 def Compute_Relative_MSE(expected, real):
@@ -122,11 +133,18 @@ def Total_Altered_Cashflows(cash_flows):
 def Altered_Value(cash_flows, interest_rates):
     total_value = []
     for j in range(120):
-        addition = cash_flows[120 - j - 1] / (1 + ((interest_rates[120 - j - 1] + 0.015) / 12))
+        addition = cash_flows[120 - j - 1] / (1 + (interest_rates[120 - j - 1] / 12))
         if j > 0:
-            addition += total_value[j - 1] / (1 + ((interest_rates[120 - j - 1] + 0.015) / 12))
+            addition += total_value[j - 1] / (1 + (interest_rates[120 - j - 1] / 12))
         total_value.append(addition)
     total_value.reverse()
+    return total_value
+
+
+def total_altered_value(cash_flows, interest_rates):
+    total_value = []
+    for i in range(len(cash_flows)):
+        total_value.append(Altered_Value(cash_flows[i], interest_rates[i]))
     return total_value
 
 
@@ -136,9 +154,9 @@ def zcb_total_value(positions, interest_rates):
     T = len(interest_rates)
     values = []
     for t in range(T):
-        value = positions[120 - t - 1]/(1 + (interest_rates[120 - t -1]/12))
+        value = positions[120 - t - 1]/(1 + (interest_rates[120 - t - 1]/12))
         if t > 0:
-            value += values[t - 1]/(1 + (interest_rates[120 - t -1]/12))
+            value += values[t - 1]/(1 + (interest_rates[120 - t - 1]/12))
         values.append(value)
     values.reverse()
     return values
@@ -148,4 +166,16 @@ def compute_margin_differences(desired_cashflows, simulated_cashflows, optimal_x
     for i in range(len(simulated_cashflows)):
         list = [desired_cashflows[j] - optimal_x[j] - simulated_cashflows[i][j] for j in range(len(simulated_cashflows[i]))]
         differences.append(list)
+    return differences
+
+
+def compute_value_differences(simulated_cashflows, interest_rates, desired_values, optimal_x):
+    differences = []
+    cashflows = []
+    for j in range(100):
+        cashflows.append([simulated_cashflows[j][i] + optimal_x[i] for i in range(120)])
+    for i in range(len(interest_rates)):
+        values = Altered_Value(cashflows[i], interest_rates[i])
+        values = [desired_values[j] - values[j] for j in range(120)]
+        differences.append(values)
     return differences

@@ -34,44 +34,62 @@ for i in range(cf_df.shape[1]-1):
     simulated_rates.append(sim_rates)
 
 desired_cashflows = ofm.Compute_Cashflows_Exclusive_Edition(data)
-#simulated_cashflows, simulated_interest_rates = hq.generate_multiple_cashflows(data, current_euribor, prepayment_model, 1.5, 0.2336, 100, 120, 100)
-#oc.writeCashflows('SimulatedCFnRates', desired_cashflows, simulated_cashflows, simulated_interest_rates)
-optimal_x = hq.zcb_margin_optimization(desired_cashflows, simulated_cashflows)
-#altered_value = ofm.Altered_Value(simulated_cashflows[0], simulated_interest_rates[0])
-#altered_value2 = ofm.Altered_Value(simulated_cashflows[1], simulated_interest_rates[1])
-#optimal_x2 = hq.zcb_mean_margin_optimization(desired_cashflows, simulated_cashflows)
-#difference = [optimal_x[i]-optimal_x2[i] for i in range(len(optimal_x))]
-differences = ofm.compute_margin_differences(desired_cashflows, simulated_cashflows, optimal_x)
-#print(difference)
-#desired_values = ofm.Compute_Time_Values(data)
-#optimal_x3 = hq.zcb_value_optimization(desired_values, simulated_rates, simulated_cashflows)
-#optimal_x4 = hq.elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_rates, 0.1)
-#optimal_x5 = hq.elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_rates, 0.25)
-#optimal_x6 = hq.elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_rates, 0.5)
-#optimal_x7 = hq.elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_rates, 0.75)
-#optimal_x8 = hq.elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_rates, 0.9)
-#maturities = []
-#type_instr = ['zcb']
-#for i in range(120):
-#    maturities.append(i + 1)
-#oc.writeHedge('zcb margin hedge', optimal_x, maturities, type_instr)
-#oc.writeHedge('zcb mean margin hedge', optimal_x2, maturities, type_instr)
-#oc.writeHedge('zcb value hedge', optimal_x3, maturities, type_instr)
-#oc.writeHedge('zcb elastic 0.1 hedge', optimal_x4, maturities, type_instr)
-#oc.writeHedge('zcb elastic 0.25 hedge', optimal_x5, maturities, type_instr)
-#oc.writeHedge('zcb elastic 0.5 hedge', optimal_x6, maturities, type_instr)
-#oc.writeHedge('zcb elastic 0.75 hedge', optimal_x7, maturities, type_instr)
-#oc.writeHedge('zcb elastic 0.9 hedge', optimal_x8, maturities, type_instr)
-#print(optimal_x)
-#test = ofm.zcb_total_value(optimal_x, simulated_interest_rates[0])
-#test2 = ofm.Altered_Value(simulated_cashflows[0], simulated_interest_rates[0])
-#test3 = [sum(x) for x in zip(test, test2)]
-#difference = [test3[i] - desired_values[i] for i in range(len(test3))]
-#print(difference)
-#test = ofm.zcb_total_value(test, simulated_interest_rates[0])
-#print(simulated_interest_rates[0])
-#print(test)
-test3 = [100 for _ in range(120)]
-test = hd.create_swaptions(120, 0.02829)
-test2 = hq.swaption_elastic_objective(test3, differences, simulated_rates, test, 0.75)
-print(test2)
+desired_values = ofm.compute_desired_values_exclusive_edition(desired_cashflows)
+maturities = []
+type_instr = ['swaptions']
+maturities = [24, 36, 60, 84, 96, 120]
+
+zcb_margin_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\zcb margin hedge updated.xlsx', sheet_name='Hedge withzcb')
+zcb_value_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\zcb value hedge updated.xlsx', sheet_name='Hedge withzcb')
+zcb_10_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\zcb elastic 0.1 hedge updated.xlsx', sheet_name='Hedge withzcb')
+zcb_50_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\zcb elastic 0.5 hedge updated.xlsx', sheet_name='Hedge withzcb')
+zcb_75_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\zcb elastic 0.75 hedge updated.xlsx', sheet_name='Hedge withzcb')
+zcb_90_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\zcb elastic 0.9 hedge updated.xlsx', sheet_name='Hedge withzcb')
+zcb_margin = []
+zcb_value = []
+zcb_10 = []
+zcb_50 = []
+zcb_75 = []
+zcb_90 = []
+for i in range(zcb_margin_df.shape[0]):
+    zcb_margin.append(zcb_margin_df.iloc[i,1])
+    zcb_value.append(zcb_value_df.iloc[i,1])
+    zcb_10.append(zcb_10_df.iloc[i,1])
+    zcb_50.append(zcb_50_df.iloc[i,1])
+    zcb_75.append(zcb_75_df.iloc[i,1])
+    zcb_90.append(zcb_90_df.iloc[i,1])
+zcb_margin_differences = ofm.compute_margin_differences(desired_cashflows, simulated_cashflows, zcb_margin)
+zcb_value_differences = ofm.compute_value_differences(simulated_cashflows, simulated_rates, desired_values, zcb_value)
+zcb_10_margin_differences = ofm.compute_margin_differences(desired_cashflows, simulated_cashflows, zcb_10)
+zcb_10_value_differences = ofm.compute_value_differences(simulated_cashflows, simulated_rates, desired_values, zcb_10)
+zcb_50_margin_differences = ofm.compute_margin_differences(desired_cashflows, simulated_cashflows, zcb_50)
+zcb_50_value_differences = ofm.compute_value_differences(simulated_cashflows, simulated_rates, desired_values, zcb_50)
+zcb_75_margin_differences = ofm.compute_margin_differences(desired_cashflows, simulated_cashflows, zcb_75)
+zcb_75_value_differences = ofm.compute_value_differences(simulated_cashflows, simulated_rates, desired_values, zcb_75)
+zcb_90_margin_differences = ofm.compute_margin_differences(desired_cashflows, simulated_cashflows, zcb_90)
+zcb_90_value_differences = ofm.compute_value_differences(simulated_cashflows, simulated_rates, desired_values, zcb_90)
+swaptions = hd.create_swaptions(data)
+initial_guess = [0 for _ in range(6)]
+swaption_margin = hq.swaption_margin_optimization(zcb_margin_differences, simulated_rates, swaptions, zcb_margin)
+#oc.writeHedge('swaption margin hedge', swaption_margin, maturities, type_instr)
+value_factor = hq.compute_MSE_factor(simulated_cashflows, simulated_rates, desired_cashflows, desired_values, zcb_value)
+swaption_value = hq. swaption_value_optimization(zcb_value_differences, simulated_rates, swaptions, zcb_value, value_factor, initial_guess)
+#oc.writeHedge('swaption value hedge', swaption_value, maturities, type_instr)
+factor_10 = hq.compute_MSE_factor(simulated_cashflows, simulated_rates, desired_cashflows, desired_values, zcb_10)
+swaption_10 = hq. swaption_elastic_optimization(zcb_10_margin_differences, zcb_10_value_differences, simulated_rates, swaptions, 0.1, zcb_10, factor_10, initial_guess)
+#oc.writeHedge('swaption elastic 0.1 hedge', swaption_10, maturities, type_instr)
+factor_50 = hq.compute_MSE_factor(simulated_cashflows, simulated_rates, desired_cashflows, desired_values, zcb_50)
+swaption_50 = hq. swaption_elastic_optimization(zcb_50_margin_differences, zcb_50_value_differences, simulated_rates, swaptions, 0.5, zcb_50, factor_50, initial_guess)
+#oc.writeHedge('swaption elastic 0.5 hedge', swaption_50, maturities, type_instr)
+factor_75 = hq.compute_MSE_factor(simulated_cashflows, simulated_rates, desired_cashflows, desired_values, zcb_75)
+swaption_75 = hq. swaption_elastic_optimization(zcb_75_margin_differences, zcb_75_value_differences, simulated_rates, swaptions, 0.75, zcb_75, factor_75, initial_guess)
+#oc.writeHedge('swaption elastic 0.75 hedge', swaption_75, maturities, type_instr)
+factor_90 = hq.compute_MSE_factor(simulated_cashflows, simulated_rates, desired_cashflows, desired_values, zcb_90)
+swaption_90 = hq. swaption_elastic_optimization(zcb_90_margin_differences, zcb_90_value_differences, simulated_rates, swaptions, 0.9, zcb_90, factor_90, initial_guess)
+#oc.writeHedge('swaption elastic 0.9 hedge', swaption_90, maturities, type_instr)
+print(swaption_margin)
+print(swaption_value)
+print(swaption_10)
+print(swaption_50)
+print(swaption_75)
+print(swaption_90)

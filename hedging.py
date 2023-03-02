@@ -91,7 +91,7 @@ class Swaption:
         strike = self.strike
         cashflows = []
         for i in range(120):
-            if t1 >= i or t2 < i:
+            if t1 > i or t2 < i:
                 cashflows.append(0)
             else:
                 cashflows.append(interest_rates[i] - strike)
@@ -113,8 +113,24 @@ class Swaption:
         return values
 
     
-def create_swaptions(max_maturity, interest_rate):
+def create_swaptions(data):
     swaptions = []
-    for i in range(max_maturity - 12):
-        swaptions.append(Swaption(i, i + 12, interest_rate))
+    FIRP = data.iloc[1].tolist()
+    FIRP = sorted(FIRP)
+    for i in range(len(FIRP)):
+        if i == 0:
+            swaptions.append(Swaption(0, FIRP[i] - 1, 0.02829))
+        else:
+            swaptions.append(Swaption(FIRP[i-1], FIRP[i] - 1, 0.02829))
     return swaptions
+
+
+def total_swaption_cashflows(positions, swaptions, interest_rates):
+    cash_flows = []
+    for i in range(len(interest_rates)):
+        list = [0 for _ in range(120)]
+        for s in range(len(swaptions)):
+            temp = Swaption.swaption_cashflows(swaptions[s], interest_rates[i])
+            list = [list[j] + positions[s] * temp[j] for j in range(120)]
+        cash_flows.append(list)
+    return cash_flows

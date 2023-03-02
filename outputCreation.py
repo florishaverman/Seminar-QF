@@ -54,11 +54,11 @@ input:  file_name -> name of the output file
 '''
 def writeHedge(file_name, hedge, maturities, type_instr):
     wb = xlsxwriter.Workbook(file_name + '.xlsx')
-    ws = wb.add_worksheet('Hedge with' + ' '.join(type_instr))
+    ws = wb.add_worksheet('Hedge with ' + ' '.join(type_instr))
     col_count = 0
     for i in range(len(type_instr)):
         ws.write(0, col_count, type_instr[i])
-        ws.write_column(1, col_count, maturities[i])
-        ws.write_column(1, col_count+1, hedge[i])
+        ws.write_column(1, col_count, maturities)
+        ws.write_column(1, col_count+1, hedge)
         col_count += 2
     wb.close()

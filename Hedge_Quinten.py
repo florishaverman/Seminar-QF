@@ -147,21 +147,20 @@ def zcb_value_objective(positions, desired_values, simulated_values, simulated_i
     # Compute the MSE
     for r in range(R):
         for t in range(T):
-            value_MSE += (0.05767551326622137 / (R * T) ) * ( (desired_values[t] - simulated_values[r][t] - hedge_values[r][t]) **2)
+            value_MSE += ( 51.83921569017807 / (R * T) ) * ((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
     return value_MSE
 
 
-# This function optimizes a zcb hedge portfolio for margin stability.
+# This function optimizes a zcb hedge portfolio for value stability.
 # Input: See zcb_value_objective. Output: The optimal hedge portfolio for value stability.
-def zcb_value_optimization(desired_values, simulated_interest_rates, simulated_cashflows):
+def zcb_value_optimization(desired_values, simulated_interest_rates, simulated_cashflows, initial_guess):
     t1 = process_time()
     R = len(simulated_interest_rates)
     simulated_values = []
     for r in range(R):
         sim_val = ofm.Altered_Value(simulated_cashflows[r], simulated_interest_rates[r])
         simulated_values.append(sim_val)
-    x0 = [10000 for _ in range(120)]
-    opt_monthly_bonds = minimize(zcb_value_objective, x0, args=(desired_values, simulated_values, simulated_interest_rates))
+    opt_monthly_bonds = minimize(zcb_value_objective, initial_guess, args=(desired_values, simulated_values, simulated_interest_rates))
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return opt_monthly_bonds.x
@@ -189,18 +188,33 @@ def elastic_zcb_objective(positions, desired_cashflows, simulated_cashflows, des
 
 
 # This function optimizes the elastic net objective function for solely zcb for a chosen alpha.
-def elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_interest_rates, alpha):
+def elastic_zcb_optimization(desired_cashflows, simulated_cashflows, desired_values, simulated_interest_rates, alpha, initial_guess):
     t1 = process_time()
     R = len(simulated_interest_rates)
     simulated_values = []
     for r in range(R):
         sim_val = ofm.Altered_Value(simulated_cashflows[r], simulated_interest_rates[r])
         simulated_values.append(sim_val)
-    x0 = [10000 for _ in range(120)]
-    opt_monthly_bonds = minimize(elastic_zcb_objective, x0, args=(desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_interest_rates, alpha))
+    opt_monthly_bonds = minimize(elastic_zcb_objective, initial_guess, args=(desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_interest_rates, alpha))
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return opt_monthly_bonds.x
+
+
+def compute_MSE_factor(simulated_cashflows, simulated_rates, desired_cashflows, desired_values, positions):
+    simulated_values = []
+    for r in range(100):
+        sim_val = ofm.Altered_Value(simulated_cashflows[r], simulated_rates[r])
+        simulated_values.append(sim_val)
+    temp = 0
+    for t in range(len(desired_cashflows)):
+        required_cashflow = desired_cashflows[t]
+        sim_cashflows = []
+        for i in range(len(simulated_cashflows)):
+            sim_cashflows.append(simulated_cashflows[i][t])
+            temp += zcb_margin_objective(positions[t], required_cashflow, sim_cashflows)
+    temp2 = zcb_value_objective(positions, desired_values, simulated_values, simulated_rates)
+    return temp/temp2
 
 
 # A function that calculates the margin stability MSE for a hedge of swaptions.
@@ -241,10 +255,10 @@ def swaption_margin_optimization(deviating_cashflows, interest_rates, swaptions,
     opt_swaptions = minimize(swaption_margin_objective, x0, args=(deviating_cashflows, interest_rates, swaptions), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
-    return opt_swaptions.x
+    return opt_swaptions
 
 
-def swaption_value_objective(positions, deviating_cashflows, interest_rates, swaptions):
+def swaption_value_objective(positions, deviating_values, interest_rates, swaptions, factor):
     value = 0
     for i in range(len(interest_rates)):
         for s in range(len(swaptions)):
@@ -254,30 +268,29 @@ def swaption_value_objective(positions, deviating_cashflows, interest_rates, swa
             possible_values = h.Swaption.swaption_value(swaptions[s], interest_rates[i])
             for t in range(120):
                 # The MSE is computed both for the case where the swaption is excercised as well when it is not
-                temp += (deviating_cashflows[i][t] - positions[s]*possible_values[t])**2
-                temp2 += deviating_cashflows[i][t]**2
+                temp += (deviating_values[i][t] - positions[s]*possible_values[t])**2
+                temp2 += deviating_values[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if temp <= temp2:
                 value += temp
             else:
                 value += temp2
-    return value
+    return factor * value
 
 
-def swaption_value_optimization(deviating_cashflows, interest_rates, swaptions, optimal_x):
+def swaption_value_optimization(deviating_values, interest_rates, swaptions, optimal_x, factor, initial_guess):
     t1 = process_time()
     limit = sum(absolute(optimal_x))
     limit = (0.05/0.95)*limit
     cons = ({'type': 'ineq', 'fun': lambda x:  limit - sum(absolute(x))})
     s = len(swaptions)
-    x0 = [0 for _ in s]
-    opt_swaptions = minimize(swaption_value_objective, x0, args=(deviating_cashflows, interest_rates, swaptions), constraints=cons)
+    opt_swaptions = minimize(swaption_value_objective, initial_guess, args=(deviating_values, interest_rates, swaptions, factor), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return opt_swaptions
 
 
-def swaption_elastic_objective(positions, deviating_cashflows, interest_rates, swaptions, alpha):
+def swaption_elastic_objective(positions, deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, factor):
     MSE_elastic = 0
     for i in range(len(interest_rates)):
         for j in range(len(swaptions)):
@@ -291,25 +304,24 @@ def swaption_elastic_objective(positions, deviating_cashflows, interest_rates, s
             for t in range(120):
                 # The MSE is computed both for the case where the swaption is excercised as well when it is not
                 margin += (deviating_cashflows[i][t] - positions[j]*possible_cashflows[t])**2
-                value += (deviating_cashflows[i][t] - positions[j]*possible_values[t])**2
-                temp += deviating_cashflows[i][t]**2
+                value += (deviating_values[i][t] - positions[j]*possible_values[t])**2
+                temp += alpha * deviating_cashflows[i][t]**2 + (1 - alpha) * factor * deviating_values[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if alpha * margin + (1 - alpha) * value < temp:
-                MSE_elastic += alpha * margin + (1 - alpha) * value
+                MSE_elastic += alpha * margin + (1 - alpha) * factor * value
             else:
                 MSE_elastic += temp
     return MSE_elastic
 
 
-def swaption_elastic_optimization(deviating_cashflows, interest_rates, swaptions, alpha):
+def swaption_elastic_optimization(deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, optimal_x, factor, initial_guess):
     t1 = process_time()
     t1 = process_time()
     limit = sum(absolute(optimal_x))
     limit = (0.05/0.95)*limit
     cons = ({'type': 'ineq', 'fun': lambda x:  limit - sum(absolute(x))})
     s = len(swaptions)
-    x0 = [0 for _ in s]
-    opt_swaptions = minimize(swaption_elastic_objective, x0, args=(deviating_cashflows, interest_rates, swaptions, alpha), constraints=cons)
+    opt_swaptions = minimize(swaption_elastic_objective, initial_guess, args=(deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, factor), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return opt_swaptions
