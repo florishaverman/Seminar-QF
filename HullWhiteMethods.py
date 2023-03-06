@@ -13,6 +13,9 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import time
 from math import tan
+from prepayment import loadINGData
+
+
 
 
 # This Function Computes A() in the bond curve expression in the Hull-White model
@@ -89,3 +92,26 @@ def Monte_Carlo(kappa, sigma, t, T, a, b, c, d):
         draw = np.random.uniform(0, T - t)
         value += theta(kappa, sigma, draw, a, b, c, d) * B(kappa, draw) * ((T - t)/10000)
     return value
+
+def swapRate(tenor, r0):   
+    # Forward curve parameters used in theta
+    current_euribor = loadINGData('Current Euribor Swap Rates')
+    current_euribor = current_euribor.loc[:, 'Swap rate']
+    popt = curve_parameters(current_euribor)
+
+    alpha = 0.1  # = kappa
+    sigma = 0.2633
+    r_zero = current_euribor[0]
+    n_steps = 100
+    T = 120
+    bond_price, swap_rates = [], []
+    sum_bond_price = 0
+    step_length_swap = 1 / 12
+    for t in range(tenor):
+        bp = bondPrice(4, alpha, 1, sigma, r0, *popt)
+        print(bp)
+        bond_price.append(bp)
+        sum_bond_price += bp
+    return  (1 - bp) / (step_length_swap * sum_bond_price)
+
+# print(swapRate(12, 0.02))

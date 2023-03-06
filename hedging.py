@@ -23,6 +23,11 @@ class Bond:
         cashflow.append(1)
         return cashflow
     
+    def getCashflow(self):
+        cashflow = [0] * (self.maturity-1)
+        cashflow.append(1)
+        return cashflow
+    
     def getCashflowsFixedLength(self, numMonths):
         cashflow = [0] * numMonths
         cashflow[self.maturity - 1] = 1
@@ -98,6 +103,7 @@ class Swaption:
         return cashflows
 
 
+
     # This function computes the npv for every t of a given interest rate simulation for the cashflows resulting from exercising a swaption
     # Input: self = a swaption object, interest_rates = one sequence of simulated interest rates.
     # Ouput: The computed npv's
@@ -118,3 +124,11 @@ def create_swaptions(max_maturity, interest_rate):
     for i in range(max_maturity - 12):
         swaptions.append(Swaption(i, i + 12, interest_rate))
     return swaptions
+
+def createSwaptionSetBetweenMaturities(maturities = [24,36,60,84,96,120], couponRates = [0.0684, 0.06, 0.0513, 0.0434, 0.0359, 0.0283]):
+    n = len(maturities)
+    swaptions = []
+    for i in range(n-1):
+        swaptions.append(Swaption(maturities[i], maturities[i + 1], couponRates[i+1] ))
+    return swaptions
+

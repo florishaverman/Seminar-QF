@@ -270,7 +270,7 @@ def swaption_value_optimization(deviating_cashflows, interest_rates, swaptions, 
     limit = (0.05/0.95)*limit
     cons = ({'type': 'ineq', 'fun': lambda x:  limit - sum(absolute(x))})
     s = len(swaptions)
-    x0 = [0 for _ in s]
+    x0 = [0 for _ in range(s)]
     opt_swaptions = minimize(swaption_value_objective, x0, args=(deviating_cashflows, interest_rates, swaptions), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
@@ -303,12 +303,12 @@ def swaption_elastic_objective(positions, deviating_cashflows, interest_rates, s
 
 def swaption_elastic_optimization(deviating_cashflows, interest_rates, swaptions, alpha):
     t1 = process_time()
-    t1 = process_time()
-    limit = sum(absolute(optimal_x))
+    limit = 1000000000
+    # limit = sum(absolute(optimal_x))
     limit = (0.05/0.95)*limit
     cons = ({'type': 'ineq', 'fun': lambda x:  limit - sum(absolute(x))})
     s = len(swaptions)
-    x0 = [0 for _ in s]
+    x0 = [0 for _ in range(s)]
     opt_swaptions = minimize(swaption_elastic_objective, x0, args=(deviating_cashflows, interest_rates, swaptions, alpha), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')

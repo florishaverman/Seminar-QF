@@ -146,6 +146,6 @@ def zcb_total_value(positions, interest_rates):
 def compute_margin_differences(desired_cashflows, simulated_cashflows, optimal_x):
     differences = []
     for i in range(len(simulated_cashflows)):
-        list = [desired_cashflows[j] - optimal_x[j] - simulated_cashflows[i][j] for j in range(len(simulated_cashflows[i]))]
+        list = [ round(desired_cashflows[j] - optimal_x[j] - simulated_cashflows[i][j]) for j in range(len(simulated_cashflows[i]))]
         differences.append(list)
     return differences

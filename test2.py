@@ -33,7 +33,7 @@ for i in range(cf_df.shape[1]-1):
     simulated_cashflows.append(sim_cf)
     simulated_rates.append(sim_rates)
 
-desired_cashflows = ofm.Compute_Cashflows_Exclusive_Edition(data)
+desired_cashflows = ofm.Compute_Cashflows_Exclusive_Edition(data) #Dit berekend the desired margin cashlflows.
 #simulated_cashflows, simulated_interest_rates = hq.generate_multiple_cashflows(data, current_euribor, prepayment_model, 1.5, 0.2336, 100, 120, 100)
 #oc.writeCashflows('SimulatedCFnRates', desired_cashflows, simulated_cashflows, simulated_interest_rates)
 optimal_x = hq.zcb_margin_optimization(desired_cashflows, simulated_cashflows)
