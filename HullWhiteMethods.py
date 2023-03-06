@@ -34,7 +34,10 @@ def bondPrice(T, kappa, t, sigma, r, a, b, c, d):
     return bond_price
 
 
-def swapRate(T, kappa, sigma, rates, a, b, c, d):
+def swapRate(T, rates):
+    [a,b,c,d] = [-2.85668639e-06,  9.30831377e-05, -1.02552560e-03,  2.96105820e-02]
+    sigma = 0.0266
+    kappa = 0.15
     bond_price, swap_rates = [], []
     sum_bond_price = 0
     step_length_swap = 1 / 12
