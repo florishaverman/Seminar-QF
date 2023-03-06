@@ -24,13 +24,13 @@ def A(T, kappa, t, sigma, a, b, c, d):
 
 # This Function Computes B() in the bond curve expression in the Hull-White model
 def B(kappa, tau):
-    B = 1 / kappa * (exp(-kappa * tau) - 1)
+    B = 1 / kappa * (exp(-kappa * tau ) - 1)
     return B
 
 
 # Determine the analytical zero-coupon bond price for Hull-White
-def bondPrice(T, kappa, tau, sigma, r, a, b, c, d):
-    bond_price = exp(A(T, kappa, tau, sigma, a, b, c, d) + B(kappa, tau) * r)
+def bondPrice(T, kappa, t, sigma, r, a, b, c, d):
+    bond_price = exp(A(T, kappa, t, sigma, a, b, c, d) + B(kappa, T-t) * r)
     return bond_price
 
 
@@ -54,7 +54,7 @@ def integrand(T, t, kappa, sigma, a, b, c, d):
 
 # This function defines the time varying mean theta(t) for the Hull-White model
 def theta(kappa, sigma, t, a, b, c, d):
-    value = 1 / kappa * func_deriv(t/12, a, b, c, d) + func(t/12, a, b, c, d) + (sigma ** 2) / (2 * kappa ** 2) * \
+    value = 1 / kappa * func_deriv_exclusive_edition(t/12, a, b, c, d) + func_exclusive_edition(t/12, a, b, c, d) + (sigma ** 2) / (2 * kappa ** 2) * \
             (1 - exp(-2 * kappa * t))
     return value
 

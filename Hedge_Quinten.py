@@ -33,7 +33,7 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
         sum_bond_price = 0
         step_length_swap = 1 / 12
         for t in range(tenor):
-            bp = hw.bondPrice(4, alpha, 1, sigma, interest_rates[T - tenor], *popt)
+            bp = hw.bondPrice(tenor, alpha, t, sigma, interest_rates[t], *popt)
             bond_price.append(bp)
             sum_bond_price += bp
             sr = (1 - bp) / (step_length_swap * sum_bond_price)
@@ -56,7 +56,7 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
                 prepay_rate[j].append(0)
     sc = ofm.Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
     simulated_cashflows = ofm.Total_Altered_Cashflows(sc)
-    return simulated_cashflows, interest_rates
+    return simulated_cashflows, interest_rates, prepay_rate
 
 
 # Ik heb even een aparte functie gemaakt om generate_cashflows te loopen, omdat dat even wat overzichtelijker was
@@ -66,9 +66,10 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
 def generate_multiple_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T, R):
     sim_cashflow_array = [[] for _ in range(R)]
     sim_interest_rate_array = [[] for _ in range(R)]
+    prepay_array = [[] for _ in range(R)]
     for i in range(R):
-        sim_cashflow_array[i], sim_interest_rate_array[i] = generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T)
-    return sim_cashflow_array, sim_interest_rate_array
+        sim_cashflow_array[i], sim_interest_rate_array[i], prepay_array[i] = generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T)
+    return sim_cashflow_array, sim_interest_rate_array, prepay_array
 
 
 # A function to calculate the objective function for margin stability using just zero coupon bonds. This function is used for the objective function
@@ -147,8 +148,9 @@ def zcb_value_objective(positions, desired_values, simulated_values, simulated_i
     # Compute the MSE
     for r in range(R):
         for t in range(T):
-            value_MSE += ( 51.83921569017807 / (R * T) ) * ((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
+            value_MSE += ( 68.02477834005363 / (R * T) ) * ((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
     return value_MSE
+#51.83921569017807
 
 
 # This function optimizes a zcb hedge portfolio for value stability.
