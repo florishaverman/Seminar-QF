@@ -34,6 +34,18 @@ def bondPrice(T, kappa, tau, sigma, r, a, b, c, d):
     return bond_price
 
 
+def swapRate(T, kappa, sigma, rates, a, b, c, d):
+    bond_price, swap_rates = [], []
+    sum_bond_price = 0
+    step_length_swap = 1 / 12
+    for t in range(T):
+        bp = bondPrice(4, kappa, 1, sigma, rates[T - t], a, b, c, d)
+        bond_price.append(bp)
+        sum_bond_price += bp
+        sr = (1 - bp) / (step_length_swap * sum_bond_price)
+        swap_rates.append(sr)
+    return swap_rates
+
 # This function is to be integrated for A() and therefore needs to be defined
 def integrand(T, t, kappa, sigma, a, b, c, d):
     function = theta(kappa, sigma, T - t, a, b, c, d) * B(kappa, T - t)
