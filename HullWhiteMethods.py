@@ -58,6 +58,14 @@ def func(x, a, b, c, d):
     return a * x ** 3 + b * x ** 2 + c * x + d
 
 
+def func_exclusive_edition(x, a, b, c, d):
+    return 4 * a * x ** 3 + 3 * b * x ** 2 + 2 * c * x + d
+
+
+def func_deriv_exclusive_edition(x, a, b, c, d):
+    return 12 * a * x ** 2 + 6 * b * x + 2 * c
+
+
 # This function fits the parameters of a given function to given data
 def curve_parameters(data):
     xdata = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
