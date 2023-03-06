@@ -255,7 +255,7 @@ def swaption_margin_optimization(deviating_cashflows, interest_rates, swaptions,
     opt_swaptions = minimize(swaption_margin_objective, x0, args=(deviating_cashflows, interest_rates, swaptions), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
-    return opt_swaptions
+    return opt_swaptions.x
 
 
 def swaption_value_objective(positions, deviating_values, interest_rates, swaptions, factor):
@@ -287,7 +287,7 @@ def swaption_value_optimization(deviating_values, interest_rates, swaptions, opt
     opt_swaptions = minimize(swaption_value_objective, initial_guess, args=(deviating_values, interest_rates, swaptions, factor), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
-    return opt_swaptions
+    return opt_swaptions.x
 
 
 def swaption_elastic_objective(positions, deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, factor):
@@ -324,4 +324,4 @@ def swaption_elastic_optimization(deviating_cashflows, deviating_values, interes
     opt_swaptions = minimize(swaption_elastic_objective, initial_guess, args=(deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, factor), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
-    return opt_swaptions
+    return opt_swaptions.x
