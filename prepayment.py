@@ -1,6 +1,6 @@
 # general tools
 import numpy as np
-
+import math
 import pandas as pd  # for reading excel data file
 from sklearn import linear_model  # for logistic regression
 
@@ -103,10 +103,44 @@ def printPrepaymentOverview(model, values, showScaterPlot=False, toPrint=False):
         plt.scatter(values, probabilities)
         plt.show()
 
+def plotPrepaymentModel(model):
+    beta0 = model.intercept_[0]
+    beta1 = model.coef_[0][0]
+    print(beta0)
+    print(beta1)
+    
+    # Creating vectors X and Y
+    x = np.linspace(-0.05, 0.25, 100)
+    y = 1 / (1 + np.exp(-1 * ( beta0 + beta1 * x) ))
+    # y =  (1 + math.exp(-1 * ( beta0 + beta1 * x) ))
+    
+    # fig = plt.figure(figsize = (10, 5))
+    # Create the plot
+    plt.plot(x, y)
+    plt.xlabel("Incentive")
+    plt.ylabel("Prepayment rate")
+    
+    # Show the plot
+    plt.show()
+
+def plotPrepaymentData(data):
+    incentive = np.array(data["Incentive"])
+    ppRate = np.array(data["Monthly pp rate"])
+    
+    # fig = plt.figure(figsize = (10, 5))
+    # Create the plot
+    plt.plot(incentive, ppRate, 'o')
+    plt.xlabel("Incentive")
+    plt.ylabel("Prepayment rate")
+    
+    # Show the plot
+    plt.show()
+
 def main():
     print('hello world from Floris')
     ### Load the created pivot table.
-    prepaymentSummary = loadINGData('Prepayment summary')
+    prepaymentSummary = loadINGData('Prepayment data')
+    plotPrepaymentData(prepaymentSummary)
 
     ### This line can be used to train the model.
     # resize of 10 000 takes -+ 40 sec, resize 1000 takes -+ 15 min
@@ -114,14 +148,16 @@ def main():
 
     ### Load the prepayment model from disk, so no need to retrain every time ###
     loaded_model = pickle.load(open('prepayment_model.sav', 'rb'))
-    print(f"The coefficients of the model are {loaded_model.coef_}")
-    print(f"The coefficients of the model are {loaded_model.intercept_}")
+    plotPrepaymentModel(loaded_model)
 
-    # printPrepaymentOverview(incentives)
-    values = []
-    for i in range(50):
-        values.append(-0.05 + i * 0.0025)
-    printPrepaymentOverview(loaded_model, values, showScaterPlot=False, toPrint=False)
+    # print(f"The coefficients of the model are {loaded_model.coef_}")
+    # print(f"The coefficients of the model are {loaded_model.intercept_}")
+
+    # # printPrepaymentOverview(incentives)
+    # values = []
+    # for i in range(50):
+    #     values.append(-0.05 + i * 0.0025)
+    # printPrepaymentOverview(loaded_model, values, showScaterPlot=False, toPrint=False)
     print('prepayment.py is finished')
 
-#main()
+main()
