@@ -160,4 +160,4 @@ def main():
     # printPrepaymentOverview(loaded_model, values, showScaterPlot=False, toPrint=False)
     print('prepayment.py is finished')
 
-main()
+# main()
