@@ -42,11 +42,13 @@ def plotXY(x,y):
     plt.plot(xpoints, ypoints)
     plt.show()
 
-def plotY(y):
+def plotY(y,saveUnder = '', showPlot = True):
     ypoints = np.array(y)
-
     plt.plot(ypoints)
-    plt.show()
+    if (saveUnder != ''):
+        plt.savefig('plots/Floris/' + saveUnder + '.png')
+    if (showPlot): 
+        plt.show()
 
 def plotList(list):
     
@@ -73,15 +75,26 @@ def plotDifferenceFromMarginZCBHedge(desired_margin_cashflows, simulated_cashflo
     # plotList(optimal_x) #Gives a plot of the weights of the hedging porfolio with only zcb
     plotMatrix(differences, 'Months', 'Deviation from derised margin', saveUnder= fileName, showPlot=False) #Plots all the net cashflows when the portfolio is hedged with zcb's
 
-
-
-def main():
-
+def plotAllDifferencesFromMarginZCBHedge():
     namesExcelZCB = ['zcb margin hedge', 'zcb elastic 0.1 hedge', 'zcb elastic 0.25 hedge', 'zcb elastic 0.5 hedge', 'zcb elastic 0.75 hedge', 'zcb elastic 0.9 hedge', 'zcb value hedge' ]
-
+    
     data, desired_cashflows,simulated_cashflows,simulated_rates = getData()
     desired_margin_cashflows = Objective_Function_Methods.Compute_Cashflows_Exclusive_Edition(data)
 
     for i in range(7):
-        plotDifferenceFromMarginZCBHedge(desired_margin_cashflows, simulated_cashflows, namesExcelZCB[i]) 
+        plotDifferenceFromMarginZCBHedge(desired_margin_cashflows, simulated_cashflows, namesExcelZCB[i])
+
+def plotAllZCBHedgePortfolios():
+    namesExcelZCB = ['zcb margin hedge', 'zcb elastic 0.1 hedge', 'zcb elastic 0.25 hedge', 'zcb elastic 0.5 hedge', 'zcb elastic 0.75 hedge', 'zcb elastic 0.9 hedge', 'zcb value hedge' ]
+    matrix = []
+    for i in range(7):
+        data = pd.read_excel('data/' + namesExcelZCB[i] + '.xlsx')
+        optimal_x = data[data.columns[1]]
+        matrix.append(optimal_x)
+    plotMatrix(matrix, 'Months', 'Position in ZCB', saveUnder= 'portfolio plot of portfolios', showPlot=False) #Plots all the net cashflows when the portfolio is hedged with zcb's
+
+def main():
+    print("hello from Floris")
+    # plotAllDifferencesFromMarginZCBHedge()
+    # plotAllZCBHedgePortfolios()
 main()
