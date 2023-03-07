@@ -42,7 +42,7 @@ def swapRate(T, rates):
     sum_bond_price = 0
     step_length_swap = 1 / 12
     for t in range(T):
-        bp = bondPrice(4, kappa, 1, sigma, rates[T - t], a, b, c, d)
+        bp = bondPrice(T, kappa, t, sigma, rates[t], a, b, c, d)
         bond_price.append(bp)
         sum_bond_price += bp
         sr = (1 - bp) / (step_length_swap * sum_bond_price)
