@@ -47,7 +47,7 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
         sum_bond_price = 0
         bond_price, swap_rates = [], []
         # inner loop starts at t+1
-        for T_n in range(t+1, tenor):
+        for T_n in range(t+1, tenor+1):
             bp = hw.bondPrice(T_n, alpha, t, sigma, interest_rates[t], *popt)
             bond_price.append(bp)
             sum_bond_price += bp
@@ -56,7 +56,7 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
             swap_rates.append(sr)
         # Determine prepayment rate per mortgage
         for i in range(6):
-            if FIRP[i] > 0:
+            if FIRP[i] > 1:
                 ref_rate = swap_rates[FIRP[i] - 1] + margin
                 incentive = coupon_rate[i] - ref_rate
                 prepay_rate_mortgage = probPrepayment(prepayment_model, incentive)
@@ -97,7 +97,7 @@ def zcb_margin_objective(hedge_cashflow, required_cashflow, sim_cashflows):
     R = len(sim_cashflows)
     for i in range(R):
         MSE += (required_cashflow - sim_cashflows[i] - hedge_cashflow)**2
-    return MSE/R
+    return MSE/(R * 120)
 
 
 # This function minimizes the average MSE over R different simulations for all 120 months using just zero coupon bonds with the assumption we have bonds for every maturity.
@@ -162,9 +162,8 @@ def zcb_value_objective(positions, desired_values, simulated_values, simulated_i
     # Compute the MSE
     for r in range(R):
         for t in range(T):
-            value_MSE += ( 68.02477834005363 / (R * T) ) * ((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
+            value_MSE += ( 0.2629737762593869 / (R * T) ) * ((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
     return value_MSE
-#51.83921569017807
 
 
 # This function optimizes a zcb hedge portfolio for value stability.
@@ -252,9 +251,9 @@ def swaption_margin_objective(positions, deviating_cashflows, interest_rates, sw
                 temp2 += deviating_cashflows[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if temp <= temp2:
-                value += temp
+                value += temp / (len(interest_rates) * 120)
             else:
-                value += temp2
+                value += temp2 / (len(interest_rates) * 120)
     return value
 
 
@@ -288,9 +287,9 @@ def swaption_value_objective(positions, deviating_values, interest_rates, swapti
                 temp2 += deviating_values[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if temp <= temp2:
-                value += temp
+                value += temp / (len(interest_rates) * 120)
             else:
-                value += temp2
+                value += temp2 / (len(interest_rates) * 120)
     return factor * value
 
 
@@ -324,9 +323,9 @@ def swaption_elastic_objective(positions, deviating_cashflows, deviating_values,
                 temp += alpha * deviating_cashflows[i][t]**2 + (1 - alpha) * factor * deviating_values[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if alpha * margin + (1 - alpha) * value < temp:
-                MSE_elastic += alpha * margin + (1 - alpha) * factor * value
+                MSE_elastic += (alpha * margin + (1 - alpha) * factor * value) / (len(interest_rates) * 120)
             else:
-                MSE_elastic += temp
+                MSE_elastic += temp / (len(interest_rates) * 120)
     return MSE_elastic
 
 
