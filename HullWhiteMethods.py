@@ -24,15 +24,39 @@ def A(T, kappa, t, sigma, a, b, c, d):
 
 # This Function Computes B() in the bond curve expression in the Hull-White model
 def B(kappa, tau):
-    B = 1 / kappa * (exp(-kappa * tau) - 1)
+    B = 1 / kappa * (exp(-kappa * tau ) - 1)
     return B
 
 
 # Determine the analytical zero-coupon bond price for Hull-White
-def bondPrice(T, kappa, tau, sigma, r, a, b, c, d):
-    bond_price = exp(A(T, kappa, tau, sigma, a, b, c, d) + B(kappa, tau) * r)
+# T and t are input in MONTHS
+def bondPrice(T, kappa, t, sigma, r, a, b, c, d):
+    bond_price = exp(A(T/12, kappa, t/12, sigma, a, b, c, d) + B(kappa, T/12-t/12) * r)
     return bond_price
 
+# Calculate the swap rates for all tenors from a given starting point
+# T: maximum tenor length
+# t: starting point
+# rates: all simulated interest rates
+def swapRate(T, t, rate):
+    [a,b,c,d] = [-2.85668639e-06,  9.30831377e-05, -1.02552560e-03,  2.96105820e-02]
+    sigma = 0.0266
+    kappa = 0.15
+    bond_price, swap_rates = [], []
+    sum_bond_price = 0
+    step_length_swap = 1 / 12
+    tenor = T
+    sum_bond_price = 0
+    bond_price, swap_rates = [], []
+    # inner loop starts at t+1
+    for T_n in range(1, tenor):
+        bp = bondPrice(T_n, kappa, t, sigma, rate, a, b, c, d)
+        bond_price.append(bp)
+        sum_bond_price += bp
+        # (P(t,t) - P(t,T_n) / sum(bondprices)
+        sr = (1 - bp) / (step_length_swap * sum_bond_price)
+        swap_rates.append(sr)
+    return swap_rates
 
 # This function is to be integrated for A() and therefore needs to be defined
 def integrand(T, t, kappa, sigma, a, b, c, d):
@@ -42,7 +66,7 @@ def integrand(T, t, kappa, sigma, a, b, c, d):
 
 # This function defines the time varying mean theta(t) for the Hull-White model
 def theta(kappa, sigma, t, a, b, c, d):
-    value = 1 / kappa * func_deriv(t/12, a, b, c, d) + func(t/12, a, b, c, d) + (sigma ** 2) / (2 * kappa ** 2) * \
+    value = 1 / kappa * func_deriv_exclusive_edition(t, a, b, c, d) + func_exclusive_edition(t, a, b, c, d) + (sigma ** 2) / (2 * kappa ** 2) * \
             (1 - exp(-2 * kappa * t))
     return value
 
@@ -56,6 +80,14 @@ def integral(T, kappa, t, sigma, a, b, c, d):
 # This function is a generic polynomial of the third order used to fit the swap curve
 def func(x, a, b, c, d):
     return a * x ** 3 + b * x ** 2 + c * x + d
+
+
+def func_exclusive_edition(x, a, b, c, d):
+    return 4 * a * x ** 3 + 3 * b * x ** 2 + 2 * c * x + d
+
+
+def func_deriv_exclusive_edition(x, a, b, c, d):
+    return 12 * a * x ** 2 + 6 * b * x + 2 * c
 
 
 # This function fits the parameters of a given function to given data
@@ -89,3 +121,4 @@ def Monte_Carlo(kappa, sigma, t, T, a, b, c, d):
         draw = np.random.uniform(0, T - t)
         value += theta(kappa, sigma, draw, a, b, c, d) * B(kappa, draw) * ((T - t)/10000)
     return value
+

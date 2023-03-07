@@ -43,7 +43,7 @@ for r in range(R):
         sum_bond_price = 0
         step_length_swap = 1 / 12
         for t in range(tenor):
-            bp = hw.bondPrice(4, alpha, 1, sigma, interest_rates[T - tenor], *popt)
+            bp = hw.bondPrice(4, alpha, 1, sigma, interest_rates[T - t], *popt)
             bond_price.append(bp)
             sum_bond_price += bp
             sr = (1 - bp) / (step_length_swap * sum_bond_price)
@@ -69,6 +69,7 @@ sc = Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
 simulated_cashflows = Total_Altered_Cashflows(sc)
 print(simulated_cashflows)
 
+
 def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T, R):
     margin = data.iloc[3, 1]
     FIRP = data.iloc[1].tolist()  # In months
@@ -87,7 +88,7 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
             sum_bond_price = 0
             step_length_swap = 1 / 12
             for t in range(tenor):
-                bp = hw.bondPrice(4, alpha, 1, sigma, interest_rates[T - tenor], *popt)
+                bp = hw.bondPrice(4, alpha, 1, sigma, interest_rates[T - t], *popt)
                 bond_price.append(bp)
                 sum_bond_price += bp
                 sr = (1 - bp) / (step_length_swap * sum_bond_price)

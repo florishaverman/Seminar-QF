@@ -26,19 +26,34 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
 
     # Here we obtain a list of simulated interest rates under Hull-White
     interest_rates = simulationHullWhite(alpha, sigma, popt, current_euribor[0], n_steps, T)
+    step_length_swap = 1 / 12
+    ''' old
     tenor = T
     while tenor > 0:
         # Determine the swap rates up to last tenor by approximating bond prices
         bond_price, swap_rates = [], []
         sum_bond_price = 0
-        step_length_swap = 1 / 12
+        
         for t in range(tenor):
-            bp = hw.bondPrice(4, alpha, 1, sigma, interest_rates[T - tenor], *popt)
+            bp = hw.bondPrice(tenor, alpha, t, sigma, interest_rates[t], *popt)
             bond_price.append(bp)
             sum_bond_price += bp
             sr = (1 - bp) / (step_length_swap * sum_bond_price)
             swap_rates.append(sr)
-
+    '''
+    tenor = T
+    # outer loop over different "starting points"
+    for t in range(T):
+        sum_bond_price = 0
+        bond_price, swap_rates = [], []
+        # inner loop starts at t+1
+        for T_n in range(t+1, tenor):
+            bp = hw.bondPrice(T_n, alpha, t, sigma, interest_rates[t], *popt)
+            bond_price.append(bp)
+            sum_bond_price += bp
+            # Calc swap rate as: (P(t,t) - P(t,T_n) / sum(bondprices)
+            sr = (1 - bp) / (step_length_swap * sum_bond_price)
+            swap_rates.append(sr)
         # Determine prepayment rate per mortgage
         for i in range(6):
             if FIRP[i] > 0:
@@ -48,7 +63,6 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
                 prepay_rate[i].append(prepay_rate_mortgage[0])
         # Update FIRP and tenor
         FIRP[:] = [f - 1 for f in FIRP]
-        tenor -= 1        
     # Generate simulated cashflows based on prepayment rate
     for i in range(120):
         for j in range(6):
@@ -56,7 +70,7 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
                 prepay_rate[j].append(0)
     sc = ofm.Altered_Cashflows([[] for _ in range(6)], prepay_rate, data)
     simulated_cashflows = ofm.Total_Altered_Cashflows(sc)
-    return simulated_cashflows, interest_rates
+    return simulated_cashflows, interest_rates, prepay_rate
 
 
 # Ik heb even een aparte functie gemaakt om generate_cashflows te loopen, omdat dat even wat overzichtelijker was
@@ -66,9 +80,10 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
 def generate_multiple_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T, R):
     sim_cashflow_array = [[] for _ in range(R)]
     sim_interest_rate_array = [[] for _ in range(R)]
+    prepay_array = [[] for _ in range(R)]
     for i in range(R):
-        sim_cashflow_array[i], sim_interest_rate_array[i] = generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T)
-    return sim_cashflow_array, sim_interest_rate_array
+        sim_cashflow_array[i], sim_interest_rate_array[i], prepay_array[i] = generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_steps, T)
+    return sim_cashflow_array, sim_interest_rate_array, prepay_array
 
 
 # A function to calculate the objective function for margin stability using just zero coupon bonds. This function is used for the objective function
@@ -147,8 +162,9 @@ def zcb_value_objective(positions, desired_values, simulated_values, simulated_i
     # Compute the MSE
     for r in range(R):
         for t in range(T):
-            value_MSE += ( 51.83921569017807 / (R * T) ) * ((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
+            value_MSE += ( 68.02477834005363 / (R * T) ) * ((desired_values[t] - simulated_values[r][t] - hedge_values[r][t])**2)
     return value_MSE
+#51.83921569017807
 
 
 # This function optimizes a zcb hedge portfolio for value stability.
@@ -255,7 +271,7 @@ def swaption_margin_optimization(deviating_cashflows, interest_rates, swaptions,
     opt_swaptions = minimize(swaption_margin_objective, x0, args=(deviating_cashflows, interest_rates, swaptions), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
-    return opt_swaptions
+    return opt_swaptions.x
 
 
 def swaption_value_objective(positions, deviating_values, interest_rates, swaptions, factor):
@@ -287,7 +303,7 @@ def swaption_value_optimization(deviating_values, interest_rates, swaptions, opt
     opt_swaptions = minimize(swaption_value_objective, initial_guess, args=(deviating_values, interest_rates, swaptions, factor), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
-    return opt_swaptions
+    return opt_swaptions.x
 
 
 def swaption_elastic_objective(positions, deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, factor):
@@ -324,4 +340,4 @@ def swaption_elastic_optimization(deviating_cashflows, deviating_values, interes
     opt_swaptions = minimize(swaption_elastic_objective, initial_guess, args=(deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, factor), constraints=cons)
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
-    return opt_swaptions
+    return opt_swaptions.x
