@@ -76,12 +76,16 @@ def main():
 def sandBox():
     prices = []
     yields = []
-    for i in range(1,60):
-        tempPrice = HullWhiteMethods.bondPrice(i, 0.15, 0, 0.0266, 0.02,-2.85668639e-06,  9.30831377e-05, -1.02552560e-03,  2.96105820e-02)
-        tempYield = -1*  math.log(tempPrice)/ i
+    
+    for i in range(1,120):
+        tempPrice = HullWhiteMethods.bondPrice(i, 0.15, 0, 0.0266, 0.01, -2.85668639e-06,  9.30831377e-05, -1.02552560e-03,  2.96105820e-02)
+        tempYield = -1*  math.log(tempPrice)/ (i/12)
+
         prices.append(tempPrice)
         yields.append(tempYield)
     # plotY(prices)
-    plotY(yields)
+    sr = HullWhiteMethods.swapRate(120, 0, 0.01)
+    print(sr)
+    plotY(sr)
 
 # sandBox()
