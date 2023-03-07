@@ -47,7 +47,7 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
         sum_bond_price = 0
         bond_price, swap_rates = [], []
         # inner loop starts at t+1
-        for T_n in range(1, tenor):
+        for T_n in range(t+1, tenor):
             bp = hw.bondPrice(T_n, alpha, t, sigma, interest_rates[t], *popt)
             bond_price.append(bp)
             sum_bond_price += bp
@@ -63,7 +63,6 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
                 prepay_rate[i].append(prepay_rate_mortgage[0])
         # Update FIRP and tenor
         FIRP[:] = [f - 1 for f in FIRP]
-        tenor -= 1        
     # Generate simulated cashflows based on prepayment rate
     for i in range(120):
         for j in range(6):
