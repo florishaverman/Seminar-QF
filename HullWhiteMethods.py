@@ -33,7 +33,6 @@ def bondPrice(T, kappa, t, sigma, r, a, b, c, d):
     bond_price = exp(A(T, kappa, t, sigma, a, b, c, d) + B(kappa, T-t) * r)
     return bond_price
 
-
 def swapRate(T, rates):
     [a,b,c,d] = [-2.85668639e-06,  9.30831377e-05, -1.02552560e-03,  2.96105820e-02]
     sigma = 0.0266
@@ -112,3 +111,4 @@ def Monte_Carlo(kappa, sigma, t, T, a, b, c, d):
         draw = np.random.uniform(0, T - t)
         value += theta(kappa, sigma, draw, a, b, c, d) * B(kappa, draw) * ((T - t)/10000)
     return value
+
