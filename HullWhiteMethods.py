@@ -30,7 +30,7 @@ def B(kappa, tau):
 
 # Determine the analytical zero-coupon bond price for Hull-White
 def bondPrice(T, kappa, t, sigma, r, a, b, c, d):
-    bond_price = exp(A(T, kappa, t, sigma, a, b, c, d) + B(kappa, T-t) * r)
+    bond_price = exp(A(T/12, kappa, t/12, sigma, a, b, c, d) + B(kappa, T/12-t/12) * r)
     return bond_price
 
 # Calculate the swap rates for all tenors from a given starting point
@@ -66,7 +66,7 @@ def integrand(T, t, kappa, sigma, a, b, c, d):
 
 # This function defines the time varying mean theta(t) for the Hull-White model
 def theta(kappa, sigma, t, a, b, c, d):
-    value = 1 / kappa * func_deriv_exclusive_edition(t/12, a, b, c, d) + func_exclusive_edition(t/12, a, b, c, d) + (sigma ** 2) / (2 * kappa ** 2) * \
+    value = 1 / kappa * func_deriv_exclusive_edition(t, a, b, c, d) + func_exclusive_edition(t, a, b, c, d) + (sigma ** 2) / (2 * kappa ** 2) * \
             (1 - exp(-2 * kappa * t))
     return value
 
