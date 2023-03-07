@@ -26,19 +26,34 @@ def generate_cashflows(data, current_euribor, prepayment_model, alpha, sigma, n_
 
     # Here we obtain a list of simulated interest rates under Hull-White
     interest_rates = simulationHullWhite(alpha, sigma, popt, current_euribor[0], n_steps, T)
+    step_length_swap = 1 / 12
+    ''' old
     tenor = T
     while tenor > 0:
         # Determine the swap rates up to last tenor by approximating bond prices
         bond_price, swap_rates = [], []
         sum_bond_price = 0
-        step_length_swap = 1 / 12
+        
         for t in range(tenor):
             bp = hw.bondPrice(tenor, alpha, t, sigma, interest_rates[t], *popt)
             bond_price.append(bp)
             sum_bond_price += bp
             sr = (1 - bp) / (step_length_swap * sum_bond_price)
             swap_rates.append(sr)
-
+    '''
+    tenor = T
+    # outer loop over different "starting points"
+    for t in range(T):
+        sum_bond_price = 0
+        bond_price, swap_rates = [], []
+        # inner loop starts at t+1
+        for T_n in range(1, tenor):
+            bp = hw.bondPrice(T_n, alpha, t, sigma, interest_rates[t], *popt)
+            bond_price.append(bp)
+            sum_bond_price += bp
+            # Calc swap rate as: (P(t,t) - P(t,T_n) / sum(bondprices)
+            sr = (1 - bp) / (step_length_swap * sum_bond_price)
+            swap_rates.append(sr)
         # Determine prepayment rate per mortgage
         for i in range(6):
             if FIRP[i] > 0:

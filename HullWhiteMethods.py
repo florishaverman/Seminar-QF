@@ -33,21 +33,31 @@ def bondPrice(T, kappa, t, sigma, r, a, b, c, d):
     bond_price = exp(A(T, kappa, t, sigma, a, b, c, d) + B(kappa, T-t) * r)
     return bond_price
 
-
-def swapRate(T, rates):
+# Calculate the swap rates for all tenors from a given starting point
+# T: maximum tenor length
+# t: starting point
+# rates: all simulated interest rates
+def swapRate(T, t, rates):
     [a,b,c,d] = [-2.85668639e-06,  9.30831377e-05, -1.02552560e-03,  2.96105820e-02]
     sigma = 0.0266
     kappa = 0.15
     bond_price, swap_rates = [], []
     sum_bond_price = 0
     step_length_swap = 1 / 12
-    for t in range(T):
-        bp = bondPrice(T, kappa, t, sigma, rates[t], a, b, c, d)
+    tenor = T
+    # outer loop over different "starting points"
+    sum_bond_price = 0
+    bond_price, swap_rates = [], []
+    # inner loop starts at t+1
+    for T_n in range(1, tenor):
+        bp = bondPrice(T_n, kappa, t, sigma, rates[t], a, b, c, d)
         bond_price.append(bp)
         sum_bond_price += bp
+        # (P(t,t) - P(t,T_n) / sum(bondprices)
         sr = (1 - bp) / (step_length_swap * sum_bond_price)
         swap_rates.append(sr)
     return swap_rates
+   
 
 # This function is to be integrated for A() and therefore needs to be defined
 def integrand(T, t, kappa, sigma, a, b, c, d):
