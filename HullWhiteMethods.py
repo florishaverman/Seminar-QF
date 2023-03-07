@@ -45,7 +45,6 @@ def swapRate(T, t, rates):
     sum_bond_price = 0
     step_length_swap = 1 / 12
     tenor = T
-    # outer loop over different "starting points"
     sum_bond_price = 0
     bond_price, swap_rates = [], []
     # inner loop starts at t+1
