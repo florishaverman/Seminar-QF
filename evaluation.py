@@ -53,39 +53,35 @@ def plotList(list):
     plt.plot(list, label = 'line ')
     plt.show()
 
-def plotMatrix(matrix, nameX, nameY):
+def plotMatrix(matrix, nameX, nameY, saveUnder = '', showPlot = True):
     for i in range(len(matrix)):
         plt.plot(matrix[i], label = 'line ' + str(i))
     #plt.plot(extra, color = 'black' )
     plt.xlabel(nameX)
     plt.ylabel(nameY)
-    plt.show()
+    if (saveUnder != ''):
+        plt.savefig('plots/Floris/' + saveUnder + '.png')
+    if (showPlot): 
+        plt.show()
+
+
+def plotDifferenceFromMarginZCBHedge(desired_margin_cashflows, simulated_cashflows, fileName):
+    data = pd.read_excel('data/' + fileName+ '.xlsx')
+    optimal_x = data[data.columns[1]]
+    differences = Objective_Function_Methods.compute_margin_differences(desired_margin_cashflows, simulated_cashflows, optimal_x)
+
+    # plotList(optimal_x) #Gives a plot of the weights of the hedging porfolio with only zcb
+    plotMatrix(differences, 'Months', 'Deviation from derised margin', saveUnder= fileName, showPlot=False) #Plots all the net cashflows when the portfolio is hedged with zcb's
+
 
 
 def main():
+
+    namesExcelZCB = ['zcb margin hedge', 'zcb elastic 0.1 hedge', 'zcb elastic 0.25 hedge', 'zcb elastic 0.5 hedge', 'zcb elastic 0.75 hedge', 'zcb elastic 0.9 hedge', 'zcb value hedge' ]
+
     data, desired_cashflows,simulated_cashflows,simulated_rates = getData()
     desired_margin_cashflows = Objective_Function_Methods.Compute_Cashflows_Exclusive_Edition(data)
-    optimal_x = Hedge_Quinten.zcb_margin_optimization(desired_margin_cashflows, simulated_cashflows)
-    differences = Objective_Function_Methods.compute_margin_differences(desired_margin_cashflows, simulated_cashflows, optimal_x)
 
-
-    # plotList(optimal_x) #Gives a plot of the weights of the hedging porfolio with only zcb
-    plotMatrix(differences, 'Months', 'Deviation from derised margin') #Plots all the net cashflows when the portfolio is hedged with zcb's
-#main()
-
-def sandBox():
-    prices = []
-    yields = []
-    
-    for i in range(1,120):
-        tempPrice = HullWhiteMethods.bondPrice(i, 0.15, 0, 0.0266, 0.01, -2.85668639e-06,  9.30831377e-05, -1.02552560e-03,  2.96105820e-02)
-        tempYield = -1*  math.log(tempPrice)/ (i/12)
-
-        prices.append(tempPrice)
-        yields.append(tempYield)
-    # plotY(prices)
-    sr = HullWhiteMethods.swapRate(120, 0, 0.01)
-    print(sr)
-    plotY(sr)
-
-# sandBox()
+    for i in range(7):
+        plotDifferenceFromMarginZCBHedge(desired_margin_cashflows, simulated_cashflows, namesExcelZCB[i]) 
+main()
