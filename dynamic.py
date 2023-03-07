@@ -16,9 +16,10 @@ def rebalance_boolean(t, desired_cashflows, simulated_cashflows, desired_values,
     margin_difference = ofm.compute_margin_differences(desired_cash, simulated_cash, zcb_positions)
     value_difference = ofm.compute_value_differences(simulated_cash, sim_rates, desired_val, zcb_positions)
     MSE = hq.swaption_elastic_objective(swaption_positions, margin_difference, value_difference, sim_rates, swaptions, alpha, factor)
-    if MSE > 100000000:
+    if MSE < 0:
         return True
     else:
+        print(MSE)
         return False
     
 
