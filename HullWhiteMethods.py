@@ -122,3 +122,4 @@ def Monte_Carlo(kappa, sigma, t, T, a, b, c, d):
         draw = np.random.uniform(0, T - t)
         value += theta(kappa, sigma, draw, a, b, c, d) * B(kappa, draw) * ((T - t)/10000)
     return value
+
