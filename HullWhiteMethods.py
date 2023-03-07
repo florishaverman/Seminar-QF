@@ -29,6 +29,7 @@ def B(kappa, tau):
 
 
 # Determine the analytical zero-coupon bond price for Hull-White
+# T and t are input in MONTHS
 def bondPrice(T, kappa, t, sigma, r, a, b, c, d):
     bond_price = exp(A(T/12, kappa, t/12, sigma, a, b, c, d) + B(kappa, T/12-t/12) * r)
     return bond_price
