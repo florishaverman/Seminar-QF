@@ -139,8 +139,8 @@ def plotPrepaymentData(data):
 def main():
     print('hello world from Floris')
     ### Load the created pivot table.
-    prepaymentSummary = loadINGData('Prepayment data')
-    plotPrepaymentData(prepaymentSummary)
+    # prepaymentSummary = loadINGData('Prepayment data')
+    # plotPrepaymentData(prepaymentSummary)
 
     ### This line can be used to train the model.
     # resize of 10 000 takes -+ 40 sec, resize 1000 takes -+ 15 min
@@ -161,3 +161,4 @@ def main():
     print('prepayment.py is finished')
 
 # main()
+
