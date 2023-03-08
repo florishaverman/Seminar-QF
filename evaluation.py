@@ -67,11 +67,19 @@ def plotMatrix(matrix, nameX ='', nameY = '', saveUnder = '', showPlot = True):
         plt.show()
 
 
-def plotDifferenceFromMarginZCBHedge(desired_margin_cashflows, simulated_cashflows, fileName):
+def plotDifferenceFromMarginZCBHedge(desired_margin_cashflows, simulated_cashflows, fileName, noOutliers = False):
     data = pd.read_excel('data/' + fileName+ '.xlsx')
     optimal_x = data[data.columns[1]]
     differences = Objective_Function_Methods.compute_margin_differences(desired_margin_cashflows, simulated_cashflows, optimal_x)
-
+    
+    counter = 0
+    if (noOutliers):
+        for i in range(len(differences)):
+            for j in range(120):
+                if (differences[i][j] > 15000 or differences[i][j] < -15000 ):
+                    differences[i][j] = 0
+                    counter += 1
+    print(counter)
     # plotList(optimal_x) #Gives a plot of the weights of the hedging porfolio with only zcb
     plotMatrix(differences, 'Months', 'Deviation from derised margin', saveUnder= fileName, showPlot=False) #Plots all the net cashflows when the portfolio is hedged with zcb's
 
@@ -136,11 +144,12 @@ def main():
             if (HullWhiteMethods.swapRate(int(t2-t1), 0, simulated_rates[i][t1])[-1] < swaption.get_strike()):
                 print(HullWhiteMethods.swapRate(int(t2-t1), 0, simulated_rates[i][t1])[-1])
                 totCashflow = []
+                
                 for j in range(120):
                     totCashflow.append(cashflow[j]*swaptionPosition[k])
                 print(sum(totCashflow))
                 # plotY(totCashflow,saveUnder = 'test' + str(i), showPlot = True)
-                plotMatrix([totCashflow, differences[i]],saveUnder = 'test' + str(i), showPlot = True)
+                plotMatrix([totCashflow, differences[i]],saveUnder = 'test' + str(i), showPlot = False)
 
     # plotList(optimal_x) #Gives a plot of the weights of the hedging porfolio with only zcb
     # plotMatrix(differences, 'Months', 'Deviation from derised margin', saveUnder= "test", showPlot=False) #Plots all the net cashflows when the portfolio is hedged with zcb's
@@ -151,4 +160,4 @@ def main():
     # plotAllDifferencesFromMarginZCBHedge()
     # plotAllZCBHedgePortfolios()
     # plotAllSwaptionHedgePortfolios()
-main()
+# main()
