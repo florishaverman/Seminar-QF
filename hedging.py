@@ -116,12 +116,9 @@ class Swaption:
 def create_swaptions(data):
     swaptions = []
     FIRP = data.iloc[1].tolist()
-    FIRP = sorted(FIRP)
+    coupon = data.iloc[2].tolist()
     for i in range(len(FIRP)):
-        if i == 0:
-            swaptions.append(Swaption(0, FIRP[i] - 1, 0.02829))
-        else:
-            swaptions.append(Swaption(FIRP[i-1], FIRP[i] - 1, 0.02829))
+        swaptions.append(Swaption(0, FIRP[i], coupon[i] - 0.015))
     return swaptions
 
 
