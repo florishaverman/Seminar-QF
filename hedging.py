@@ -94,7 +94,7 @@ class Swaption:
             if t1 > i or t2 < i:
                 cashflows.append(0)
             else:
-                cashflows.append(interest_rates[i] - strike)
+                cashflows.append(strike - interest_rates[i])
         return cashflows
 
 
@@ -115,10 +115,31 @@ class Swaption:
     
 def create_swaptions(data):
     swaptions = []
-    FIRP = data.iloc[1].tolist()
-    coupon = data.iloc[2].tolist()
-    for i in range(len(FIRP)):
-        swaptions.append(Swaption(0, FIRP[i], coupon[i] - 0.015))
+    swaptions.append(Swaption(1,12,0.0684))
+    swaptions.append(Swaption(13,24, 0.0684))
+    swaptions.append(Swaption(1,12,0.06))
+    swaptions.append(Swaption(13,24,0.06))
+    swaptions.append(Swaption(25,36,0.06))
+    swaptions.append(Swaption(1,12,0.0513))
+    swaptions.append(Swaption(13,24,0.0513))
+    swaptions.append(Swaption(25,36,0.0513))
+    swaptions.append(Swaption(37,48,0.0513))
+    swaptions.append(Swaption(49,60,0.0513))
+    swaptions.append(Swaption(1,12,0.0434))
+    swaptions.append(Swaption(13,24,0.0434))
+    swaptions.append(Swaption(25,36,0.0434))
+    swaptions.append(Swaption(37,48,0.0434))
+    swaptions.append(Swaption(49,60,0.0434))
+    swaptions.append(Swaption(1,12,0.0359))
+    swaptions.append(Swaption(13,24,0.0359))
+    swaptions.append(Swaption(25,36,0.0359))
+    swaptions.append(Swaption(37,48,0.0359))
+    swaptions.append(Swaption(49,60,0.0359))
+    swaptions.append(Swaption(1,12,0.0283))
+    swaptions.append(Swaption(13,24,0.0283))
+    swaptions.append(Swaption(25,36,0.0283))
+    swaptions.append(Swaption(37,48,0.0283))
+    swaptions.append(Swaption(49,60,0.0283))
     return swaptions
 
 
