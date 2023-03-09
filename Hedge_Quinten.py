@@ -254,7 +254,7 @@ def swaption_margin_objective(positions, deviating_cashflows, interest_rates, sw
                 value += temp / (len(interest_rates) * 120)
             else:
                 value += temp2 / (len(interest_rates) * 120)
-    return value
+    return value / 12000
 
 
 # This function optimizes a swaption hedge on margin stability for a given set of swaptions.
@@ -267,13 +267,13 @@ def swaption_margin_optimization(deviating_cashflows, interest_rates, swaptions,
     limit = (0.05/0.95)*limit
     cons = ({'type': 'ineq', 'fun': lambda x:  limit - sum(absolute(x))})
     x0 = [0 for _ in range(len(swaptions))]
-    opt_swaptions = minimize(swaption_margin_objective, x0, args=(deviating_cashflows, interest_rates, swaptions), constraints=cons)
+    opt_swaptions = minimize(swaption_margin_objective, x0, args=(deviating_cashflows, interest_rates, swaptions))
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return opt_swaptions.x
 
 
-def swaption_value_objective(positions, deviating_values, interest_rates, swaptions, factor):
+def swaption_value_objective(positions, deviating_values, interest_rates, swaptions):
     value = 0
     for i in range(len(interest_rates)):
         for s in range(len(swaptions)):
@@ -290,22 +290,22 @@ def swaption_value_objective(positions, deviating_values, interest_rates, swapti
                 value += temp / (len(interest_rates) * 120)
             else:
                 value += temp2 / (len(interest_rates) * 120)
-    return factor * value
+    return value / 12000
 
 
-def swaption_value_optimization(deviating_values, interest_rates, swaptions, optimal_x, factor, initial_guess):
+def swaption_value_optimization(deviating_values, interest_rates, swaptions, optimal_x, initial_guess):
     t1 = process_time()
     limit = sum(absolute(optimal_x))
     limit = (0.05/0.95)*limit
     cons = ({'type': 'ineq', 'fun': lambda x:  limit - sum(absolute(x))})
     s = len(swaptions)
-    opt_swaptions = minimize(swaption_value_objective, initial_guess, args=(deviating_values, interest_rates, swaptions, factor), constraints=cons)
+    opt_swaptions = minimize(swaption_value_objective, initial_guess, args=(deviating_values, interest_rates, swaptions))
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return opt_swaptions.x
 
 
-def swaption_elastic_objective(positions, deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, factor):
+def swaption_elastic_objective(positions, deviating_cashflows, deviating_values, interest_rates, swaptions, alpha):
     MSE_elastic = 0
     for i in range(len(interest_rates)):
         for j in range(len(swaptions)):
@@ -320,23 +320,23 @@ def swaption_elastic_objective(positions, deviating_cashflows, deviating_values,
                 # The MSE is computed both for the case where the swaption is excercised as well when it is not
                 margin += (deviating_cashflows[i][t] - positions[j]*possible_cashflows[t])**2
                 value += (deviating_values[i][t] - positions[j]*possible_values[t])**2
-                temp += alpha * deviating_cashflows[i][t]**2 + (1 - alpha) * factor * deviating_values[i][t]**2
+                temp += alpha * deviating_cashflows[i][t]**2 + (1 - alpha) * deviating_values[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if alpha * margin + (1 - alpha) * value < temp:
-                MSE_elastic += (alpha * margin + (1 - alpha) * factor * value) / (len(interest_rates) * 120)
+                MSE_elastic += (alpha * margin + (1 - alpha) * value) / (len(interest_rates) * 120)
             else:
                 MSE_elastic += temp / (len(interest_rates) * 120)
-    return MSE_elastic
+    return MSE_elastic / 12000
 
 
-def swaption_elastic_optimization(deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, optimal_x, factor, initial_guess):
+def swaption_elastic_optimization(deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, optimal_x, initial_guess):
     t1 = process_time()
     t1 = process_time()
     limit = sum(absolute(optimal_x))
     limit = (0.05/0.95)*limit
     cons = ({'type': 'ineq', 'fun': lambda x:  limit - sum(absolute(x))})
     s = len(swaptions)
-    opt_swaptions = minimize(swaption_elastic_objective, initial_guess, args=(deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, factor), constraints=cons)
+    opt_swaptions = minimize(swaption_elastic_objective, initial_guess, args=(deviating_cashflows, deviating_values, interest_rates, swaptions, alpha))
     t2 = process_time()
     print('optimization took ', t2-t1, ' seconds in total')
     return opt_swaptions.x
