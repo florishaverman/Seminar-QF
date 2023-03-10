@@ -323,9 +323,9 @@ def swaption_elastic_objective(positions, deviating_cashflows, deviating_values,
                 temp += alpha * deviating_cashflows[i][t]**2 + (1 - alpha) * deviating_values[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if alpha * margin + (1 - alpha) * value < temp:
-                MSE_elastic += (alpha * margin + (1 - alpha) * value) / (len(interest_rates) * 120 * 20 * 3.8)
+                MSE_elastic += (alpha * margin + (1 - alpha) * value) / (len(interest_rates) * 120 * 20)
             else:
-                MSE_elastic += temp / (len(interest_rates) * 120 * 20 * 3.8)
+                MSE_elastic += temp / (len(interest_rates) * 120 * 20)
     return MSE_elastic
 
 
