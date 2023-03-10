@@ -2,7 +2,7 @@
 import numpy as np
 import math
 import pandas as pd  # for reading excel data file
-from sklearn import linear_model  # for logistic regression
+# from sklearn import linear_model  # for logistic regression
 
 import matplotlib.pyplot as plt  # for plotting the data
 import time  # to time the functions
@@ -62,14 +62,14 @@ def trainPrepaymentModel(filename, prepaymentSummary, rescaleSize=10000):
             X.append(incentive[i])
             y.append(0)
 
-    logr = linear_model.LogisticRegression(fit_intercept= True).fit(np.array(X).reshape(-1,1),np.array(y))
+    # logr = linear_model.LogisticRegression(fit_intercept= True).fit(np.array(X).reshape(-1,1),np.array(y))
     
     endTime = time.time()
     print(f"Training took {round(endTime- startTime,1)} seconds")
 
 
     # save the model to disk
-    pickle.dump(logr, open(filename, 'wb'))
+    # pickle.dump(logr, open(filename, 'wb'))
     print(f"model is saved under the name {filename}")
 
 
