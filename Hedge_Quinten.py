@@ -251,10 +251,10 @@ def swaption_margin_objective(positions, deviating_cashflows, interest_rates, sw
                 temp2 += deviating_cashflows[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if temp <= temp2:
-                value += temp / (len(interest_rates) * 120)
+                value += temp / (len(interest_rates) * 120 * 20)
             else:
-                value += temp2 / (len(interest_rates) * 120)
-    return value / 12000
+                value += temp2 / (len(interest_rates) * 120 * 20)
+    return value
 
 
 # This function optimizes a swaption hedge on margin stability for a given set of swaptions.
@@ -287,10 +287,10 @@ def swaption_value_objective(positions, deviating_values, interest_rates, swapti
                 temp2 += deviating_values[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if temp <= temp2:
-                value += temp / (len(interest_rates) * 120)
+                value += temp / (len(interest_rates) * 120 * 20)
             else:
-                value += temp2 / (len(interest_rates) * 120)
-    return value / 12000
+                value += temp2 / (len(interest_rates) * 120 * 20)
+    return value
 
 
 def swaption_value_optimization(deviating_values, interest_rates, swaptions, optimal_x, initial_guess):
@@ -323,10 +323,10 @@ def swaption_elastic_objective(positions, deviating_cashflows, deviating_values,
                 temp += alpha * deviating_cashflows[i][t]**2 + (1 - alpha) * deviating_values[i][t]**2
             # If the MSE is smaller when exercised, the swaption is exercised, otherwise not
             if alpha * margin + (1 - alpha) * value < temp:
-                MSE_elastic += (alpha * margin + (1 - alpha) * value) / (len(interest_rates) * 120)
+                MSE_elastic += (alpha * margin + (1 - alpha) * value) / (len(interest_rates) * 120 * 20 * 3.8)
             else:
-                MSE_elastic += temp / (len(interest_rates) * 120)
-    return MSE_elastic / 12000
+                MSE_elastic += temp / (len(interest_rates) * 120 * 20 * 3.8)
+    return MSE_elastic
 
 
 def swaption_elastic_optimization(deviating_cashflows, deviating_values, interest_rates, swaptions, alpha, optimal_x, initial_guess):

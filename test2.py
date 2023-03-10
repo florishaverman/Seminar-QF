@@ -19,8 +19,8 @@ current_euribor = loadINGData('Current Euribor Swap Rates')
 #desired_cashflows = ofm.Compute_Cashflows_Exclusive_Edition(data)
 #oc.writeCashflows('SimulatedCFnRates', desired_cashflows, simulated_cashflows, simulated_rates)
 desired_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\SimulatedCFnRates.xlsx', sheet_name='Desired CF')
-cf_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\SimulatedCFnRates.xlsx', sheet_name='Simulated CF')
-rates_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\SimulatedCFnRates.xlsx', sheet_name='Simulated Interest Rates')
+cf_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\Short rates different starting points\Short rate paths initial rate 0.045.xlsx', sheet_name='Simulated CF')
+rates_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\Short rates different starting points\Short rate paths initial rate 0.045.xlsx', sheet_name='Simulated Interest Rates')
 desired_cashflows = []
 simulated_cashflows = []
 simulated_rates = []
@@ -63,20 +63,20 @@ zcb_25_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\zcb elastic 0.25 hedge.xl
 zcb_50_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\zcb elastic 0.5 hedge.xlsx', sheet_name='Hedge with zcb')
 zcb_75_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\zcb elastic 0.75 hedge.xlsx', sheet_name='Hedge with zcb')
 zcb_90_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\zcb elastic 0.9 hedge.xlsx', sheet_name='Hedge with zcb')
-# swaption_margin_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption margin hedge same T.xlsx', sheet_name='Hedge with swaption')
-# swaption_value_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption value same T.xlsx', sheet_name='Hedge with swaption')
-# swaption_10_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.1 same T.xlsx', sheet_name='Hedge with swaption')
-# swaption_25_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.25 same T.xlsx', sheet_name='Hedge with swaption')
-# swaption_50_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.5 same T.xlsx', sheet_name='Hedge with swaption')
-# swaption_75_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.75 same T.xlsx', sheet_name='Hedge with swaption')
-# swaption_90_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.9 same T.xlsx', sheet_name='Hedge with swaption')
-# swaption_margin_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption margin hedge same coupon yearly.xlsx', sheet_name='Hedge with swaption')
-# swaption_value_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption value same coupon yearly.xlsx', sheet_name='Hedge with swaption')
-# swaption_10_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.1 same coupon yearly.xlsx', sheet_name='Hedge with swaption')
-# swaption_25_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.25 same coupon yearly.xlsx', sheet_name='Hedge with swaption')
-# swaption_50_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.5 same coupon yearly.xlsx', sheet_name='Hedge with swaption')
-# swaption_75_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.75 same coupon yearly.xlsx', sheet_name='Hedge with swaption')
-# swaption_90_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.9 same coupon yearly.xlsx', sheet_name='Hedge with swaption')
+swaption_margin_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption margin hedge same T.xlsx', sheet_name='Hedge with swaption')
+swaption_value_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption value same T.xlsx', sheet_name='Hedge with swaption')
+swaption_10_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.1 same T.xlsx', sheet_name='Hedge with swaption')
+swaption_25_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.25 same T.xlsx', sheet_name='Hedge with swaption')
+swaption_50_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.5 same T.xlsx', sheet_name='Hedge with swaption')
+swaption_75_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.75 same T.xlsx', sheet_name='Hedge with swaption')
+swaption_90_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.9 same T.xlsx', sheet_name='Hedge with swaption')
+swaption_margin_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption margin hedge coupon.xlsx', sheet_name='Hedge with swaption')
+swaption_value_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption value coupon.xlsx', sheet_name='Hedge with swaption')
+swaption_10_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.1 coupon.xlsx', sheet_name='Hedge with swaption')
+swaption_25_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.25 coupon.xlsx', sheet_name='Hedge with swaption')
+swaption_50_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.5 coupon.xlsx', sheet_name='Hedge with swaption')
+swaption_75_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.75 coupon.xlsx', sheet_name='Hedge with swaption')
+swaption_90_yearly_df = pd.read_excel('D:\ING Case\Seminar-QF\Data\swaption elastic 0.9 coupon.xlsx', sheet_name='Hedge with swaption')
 zcb_margin = []
 zcb_value = []
 zcb_10 = []
@@ -84,20 +84,20 @@ zcb_25 = []
 zcb_50 = []
 zcb_75 = []
 zcb_90 = []
-# swaption_margin = []
-# swaption_value = []
-# swaption_10 = []
-# swaption_25 = []
-# swaption_50 = []
-# swaption_75 = []
-# swaption_90 = []
-# swaption_margin_yearly = []
-# swaption_value_yearly = []
-# swaption_10_yearly = []
-# swaption_25_yearly = []
-# swaption_50_yearly = []
-# swaption_75_yearly = []
-# swaption_90_yearly = []
+swaption_margin = []
+swaption_value = []
+swaption_10 = []
+swaption_25 = []
+swaption_50 = []
+swaption_75 = []
+swaption_90 = []
+swaption_margin_yearly = []
+swaption_value_yearly = []
+swaption_10_yearly = []
+swaption_25_yearly = []
+swaption_50_yearly = []
+swaption_75_yearly = []
+swaption_90_yearly = []
 for i in range(zcb_value_df.shape[0]):
     zcb_margin.append(zcb_margin_df.iloc[i,1])
     zcb_value.append(zcb_value_df.iloc[i,1])
@@ -106,21 +106,21 @@ for i in range(zcb_value_df.shape[0]):
     zcb_50.append(zcb_50_df.iloc[i,1])
     zcb_75.append(zcb_75_df.iloc[i,1])
     zcb_90.append(zcb_90_df.iloc[i,1])
-# for i in range(swaption_margin_df.shape[0]):
-#     swaption_margin.append(swaption_margin_df.iloc[i,1])
-#     swaption_value.append(swaption_value_df.iloc[i,1])
-#     swaption_10.append(swaption_10_df.iloc[i,1])
-#     swaption_25.append(swaption_25_df.iloc[i,1])
-#     swaption_50.append(swaption_50_df.iloc[i,1])
-#     swaption_75.append(swaption_75_df.iloc[i,1])
-#     swaption_90.append(swaption_90_df.iloc[i,1])
-#     swaption_margin_yearly.append(swaption_margin_df.iloc[i,1])
-#     swaption_value_yearly.append(swaption_value_df.iloc[i,1])
-#     swaption_10_yearly.append(swaption_10_df.iloc[i,1])
-#     swaption_25_yearly.append(swaption_25_df.iloc[i,1])
-#     swaption_50_yearly.append(swaption_50_df.iloc[i,1])
-#     swaption_75_yearly.append(swaption_75_df.iloc[i,1])
-#     swaption_90_yearly.append(swaption_90_df.iloc[i,1])
+for i in range(swaption_margin_df.shape[0]):
+    swaption_margin.append(swaption_margin_df.iloc[i,1])
+    swaption_value.append(swaption_value_df.iloc[i,1])
+    swaption_10.append(swaption_10_df.iloc[i,1])
+    swaption_25.append(swaption_25_df.iloc[i,1])
+    swaption_50.append(swaption_50_df.iloc[i,1])
+    swaption_75.append(swaption_75_df.iloc[i,1])
+    swaption_90.append(swaption_90_df.iloc[i,1])
+    swaption_margin_yearly.append(swaption_margin_df.iloc[i,1])
+    swaption_value_yearly.append(swaption_value_df.iloc[i,1])
+    swaption_10_yearly.append(swaption_10_df.iloc[i,1])
+    swaption_25_yearly.append(swaption_25_df.iloc[i,1])
+    swaption_50_yearly.append(swaption_50_df.iloc[i,1])
+    swaption_75_yearly.append(swaption_75_df.iloc[i,1])
+    swaption_90_yearly.append(swaption_90_df.iloc[i,1])
 type_instr = ['swaption']
 maturities = []
 simulated_values = []
@@ -139,7 +139,7 @@ zcb_75_margin_differences = ofm.compute_margin_differences(desired_cashflows, si
 zcb_75_value_differences = ofm.compute_value_differences(simulated_cashflows, simulated_rates, desired_values, zcb_75)
 zcb_90_margin_differences = ofm.compute_margin_differences(desired_cashflows, simulated_cashflows, zcb_90)
 zcb_90_value_differences = ofm.compute_value_differences(simulated_cashflows, simulated_rates, desired_values, zcb_90)
-# swaptions = hd.create_swaptions(data)
+swaptions = hd.create_swaptions(data)
 MSE_margin = 0
 for t in range(120):
     required_cashflow = desired_cashflows[t]
@@ -147,20 +147,20 @@ for t in range(120):
     for r in range(100):
         sim_cashflows.append(simulated_cashflows[r][t])
     MSE_margin += hq.zcb_margin_objective(zcb_margin[t], required_cashflow, sim_cashflows)
-# print(MSE_margin)
-# print(hq.zcb_value_objective(zcb_value, desired_values, simulated_values, simulated_rates))
-# print(hq.elastic_zcb_objective(zcb_10, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_rates, 0.1))
-# print(hq.elastic_zcb_objective(zcb_25, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_rates, 0.25))
-# print(hq.elastic_zcb_objective(zcb_50, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_rates, 0.50))
-# print(hq.elastic_zcb_objective(zcb_75, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_rates, 0.75))
-# print(hq.elastic_zcb_objective(zcb_90, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_rates, 0.90))
-# print(hq.swaption_margin_objective(swaption_margin, zcb_margin_differences, simulated_rates, swaptions))
-# print(hq.swaption_elastic_objective(swaption_value, zcb_margin_differences, zcb_value_differences, simulated_rates, swaptions, 0))
-# print(hq.swaption_elastic_objective(swaption_10, zcb_10_margin_differences, zcb_10_value_differences, simulated_rates, swaptions, 0.10))
-# print(hq.swaption_elastic_objective(swaption_25, zcb_25_margin_differences, zcb_25_value_differences, simulated_rates, swaptions, 0.25))
-# print(hq.swaption_elastic_objective(swaption_50, zcb_50_margin_differences, zcb_50_value_differences, simulated_rates, swaptions, 0.50))
-# print(hq.swaption_elastic_objective(swaption_75, zcb_75_margin_differences, zcb_75_value_differences, simulated_rates, swaptions, 0.75))
-# print(hq.swaption_elastic_objective(swaption_90, zcb_90_margin_differences, zcb_90_value_differences, simulated_rates, swaptions, 0.90))
+print(MSE_margin)
+print(hq.zcb_value_objective(zcb_value, desired_values, simulated_values, simulated_rates))
+print(hq.elastic_zcb_objective(zcb_10, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_rates, 0.1))
+print(hq.elastic_zcb_objective(zcb_25, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_rates, 0.25))
+print(hq.elastic_zcb_objective(zcb_50, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_rates, 0.50))
+print(hq.elastic_zcb_objective(zcb_75, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_rates, 0.75))
+print(hq.elastic_zcb_objective(zcb_90, desired_cashflows, simulated_cashflows, desired_values, simulated_values, simulated_rates, 0.90))
+print(hq.swaption_margin_objective(swaption_margin, zcb_margin_differences, simulated_rates, swaptions))
+print(hq.swaption_elastic_objective(swaption_value, zcb_margin_differences, zcb_value_differences, simulated_rates, swaptions, 0))
+print(hq.swaption_elastic_objective(swaption_10, zcb_10_margin_differences, zcb_10_value_differences, simulated_rates, swaptions, 0.10))
+print(hq.swaption_elastic_objective(swaption_25, zcb_25_margin_differences, zcb_25_value_differences, simulated_rates, swaptions, 0.25))
+print(hq.swaption_elastic_objective(swaption_50, zcb_50_margin_differences, zcb_50_value_differences, simulated_rates, swaptions, 0.50))
+print(hq.swaption_elastic_objective(swaption_75, zcb_75_margin_differences, zcb_75_value_differences, simulated_rates, swaptions, 0.75))
+print(hq.swaption_elastic_objective(swaption_90, zcb_90_margin_differences, zcb_90_value_differences, simulated_rates, swaptions, 0.90))
 swaptions = []
 swaptions.append(hd.Swaption(1,3,0.0684))
 swaptions.append(hd.Swaption(4,6,0.0684))
@@ -182,24 +182,24 @@ swaptions.append(hd.Swaption(49,51,0.0513))
 swaptions.append(hd.Swaption(52,54,0.0513))
 swaptions.append(hd.Swaption(55,57,0.0513))
 swaptions.append(hd.Swaption(58,60,0.0513))
-# print(hq.swaption_margin_objective(swaption_margin_yearly, zcb_margin_differences, simulated_rates, swaptions))
-# print(hq.swaption_elastic_objective(swaption_value_yearly, zcb_margin_differences, zcb_value_differences, simulated_rates, swaptions, 0))
-# print(hq.swaption_elastic_objective(swaption_10_yearly, zcb_10_margin_differences, zcb_10_value_differences, simulated_rates, swaptions, 0.10))
-# print(hq.swaption_elastic_objective(swaption_25_yearly, zcb_25_margin_differences, zcb_25_value_differences, simulated_rates, swaptions, 0.25))
-# print(hq.swaption_elastic_objective(swaption_50_yearly, zcb_50_margin_differences, zcb_50_value_differences, simulated_rates, swaptions, 0.50))
-# print(hq.swaption_elastic_objective(swaption_75_yearly, zcb_75_margin_differences, zcb_75_value_differences, simulated_rates, swaptions, 0.75))
-# print(hq.swaption_elastic_objective(swaption_90_yearly, zcb_90_margin_differences, zcb_90_value_differences, simulated_rates, swaptions, 0.90))
-swaption_margin = hq.swaption_margin_optimization(zcb_margin_differences, simulated_rates, swaptions, zcb_margin)
-oc.writeHedge('swaption margin hedge coupon', swaption_margin, maturities, type_instr)
-swaption_value = hq. swaption_elastic_optimization(zcb_margin_differences, zcb_value_differences, simulated_rates, swaptions, 0, zcb_value, swaption_margin)
-oc.writeHedge('swaption value coupon', swaption_value, maturities, type_instr)
-swaption_10 = hq. swaption_elastic_optimization(zcb_10_margin_differences, zcb_10_value_differences, simulated_rates, swaptions, 0.1, zcb_10, swaption_margin)
-oc.writeHedge('swaption elastic 0.1 coupon', swaption_10, maturities, type_instr)
-swaption_10 = hq. swaption_elastic_optimization(zcb_25_margin_differences, zcb_25_value_differences, simulated_rates, swaptions, 0.25, zcb_25, swaption_margin)
-oc.writeHedge('swaption elastic 0.25 coupon', swaption_10, maturities, type_instr)
-swaption_50 = hq. swaption_elastic_optimization(zcb_50_margin_differences, zcb_50_value_differences, simulated_rates, swaptions, 0.5, zcb_50, swaption_margin)
-oc.writeHedge('swaption elastic 0.5 coupon', swaption_50, maturities, type_instr)
-swaption_75 = hq. swaption_elastic_optimization(zcb_75_margin_differences, zcb_75_value_differences, simulated_rates, swaptions, 0.75, zcb_75, swaption_margin)
-oc.writeHedge('swaption elastic 0.75 coupon', swaption_75, maturities, type_instr)
-swaption_90 = hq. swaption_elastic_optimization(zcb_90_margin_differences, zcb_90_value_differences, simulated_rates, swaptions, 0.9, zcb_90, swaption_margin)
-oc.writeHedge('swaption elastic 0.9 coupon', swaption_90, maturities, type_instr)
+print(hq.swaption_margin_objective(swaption_margin, zcb_margin_differences, simulated_rates, swaptions))
+print(hq.swaption_elastic_objective(swaption_value, zcb_margin_differences, zcb_value_differences, simulated_rates, swaptions, 0))
+print(hq.swaption_elastic_objective(swaption_10, zcb_10_margin_differences, zcb_10_value_differences, simulated_rates, swaptions, 0.10))
+print(hq.swaption_elastic_objective(swaption_25, zcb_25_margin_differences, zcb_25_value_differences, simulated_rates, swaptions, 0.25))
+print(hq.swaption_elastic_objective(swaption_50, zcb_50_margin_differences, zcb_50_value_differences, simulated_rates, swaptions, 0.50))
+print(hq.swaption_elastic_objective(swaption_75, zcb_75_margin_differences, zcb_75_value_differences, simulated_rates, swaptions, 0.75))
+print(hq.swaption_elastic_objective(swaption_90, zcb_90_margin_differences, zcb_90_value_differences, simulated_rates, swaptions, 0.90))
+# swaption_margin = hq.swaption_margin_optimization(zcb_margin_differences, simulated_rates, swaptions, zcb_margin)
+# oc.writeHedge('swaption margin hedge coupon', swaption_margin, maturities, type_instr)
+# swaption_value = hq. swaption_elastic_optimization(zcb_margin_differences, zcb_value_differences, simulated_rates, swaptions, 0, zcb_value, swaption_margin)
+# oc.writeHedge('swaption value coupon', swaption_value, maturities, type_instr)
+# swaption_10 = hq. swaption_elastic_optimization(zcb_10_margin_differences, zcb_10_value_differences, simulated_rates, swaptions, 0.1, zcb_10, swaption_margin)
+# oc.writeHedge('swaption elastic 0.1 coupon', swaption_10, maturities, type_instr)
+# swaption_10 = hq. swaption_elastic_optimization(zcb_25_margin_differences, zcb_25_value_differences, simulated_rates, swaptions, 0.25, zcb_25, swaption_margin)
+# oc.writeHedge('swaption elastic 0.25 coupon', swaption_10, maturities, type_instr)
+# swaption_50 = hq. swaption_elastic_optimization(zcb_50_margin_differences, zcb_50_value_differences, simulated_rates, swaptions, 0.5, zcb_50, swaption_margin)
+# oc.writeHedge('swaption elastic 0.5 coupon', swaption_50, maturities, type_instr)
+# swaption_75 = hq. swaption_elastic_optimization(zcb_75_margin_differences, zcb_75_value_differences, simulated_rates, swaptions, 0.75, zcb_75, swaption_margin)
+# oc.writeHedge('swaption elastic 0.75 coupon', swaption_75, maturities, type_instr)
+# swaption_90 = hq. swaption_elastic_optimization(zcb_90_margin_differences, zcb_90_value_differences, simulated_rates, swaptions, 0.9, zcb_90, swaption_margin)
+# oc.writeHedge('swaption elastic 0.9 coupon', swaption_90, maturities, type_instr)
